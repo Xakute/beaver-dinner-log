@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Beaver Family Dinner Log</title>
+    <title>Family Dinner Log</title>
     <!-- Use a modern font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Tailwind CSS CDN for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -15,242 +15,512 @@
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6;
         }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease-out;
+        }
+        .modal-content {
+            background-color: #fff;
+            padding: 24px;
+            border-radius: 1rem;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 4px_6px rgba(0, 0, 0, 0.1);
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
 
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-white bg-opacity-75 z-50 flex items-center justify-center">
+        <div class="text-center">
+            <svg class="animate-spin h-10 w-10 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p class="text-gray-600 mt-3 font-semibold">Connecting to the Dinner Log...</p>
+        </div>
+    </div>
+
     <div class="bg-white rounded-3xl shadow-xl w-full max-w-2xl p-6 md:p-8 space-y-6">
-        <h1 class="text-3xl md:text-4xl font-bold text-center text-gray-800">Beaver Family Dinner Log</h1>
-        <p class="text-center text-gray-500">Track your dinners and search your history.</p>
+        <div class="text-center">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800">Family Dinner Log</h1>
+            <p class="text-gray-500 mt-1">Keep track of your delicious meals together.</p>
+        </div>
 
         <!-- User Info -->
-        <p id="userIdDisplay" class="text-xs text-center text-gray-400 break-all">Connecting...</p>
+        <p id="userIdDisplay" class="text-xs text-center text-gray-400 break-all p-2 bg-gray-50 rounded-md"></p>
 
-        <!-- Input and Add Section -->
-        <div class="flex flex-col md:flex-row gap-4">
-            <input id="mealInput" type="text" placeholder="What's for dinner?" class="flex-grow p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 transition duration-200">
-            <button id="addButton" disabled class="bg-red-700 text-white font-semibold py-3 px-6 rounded-xl shadow-md hover:bg-red-800 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
-                Add Dinner
+        <!-- NEW: Redesigned Step-by-Step Input Form -->
+        <div id="inputForm" class="space-y-4">
+            <!-- Step 1: The Meal -->
+            <div class="p-4 bg-slate-100 rounded-xl space-y-3">
+                <label class="block text-md font-semibold text-gray-700 text-center">Step 1: What was the meal?</label>
+                <input id="mealInput" type="text" placeholder="e.g., Spaghetti and Meatballs" class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
+                <input id="dateInput" type="date" class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
+            </div>
+
+            <!-- Step 2: Who Ate? -->
+            <div class="p-4 bg-slate-100 rounded-xl">
+                <label class="block text-md font-semibold text-gray-700 mb-3 text-center">Step 2: Who ate this meal?</label>
+                <div class="flex justify-center flex-wrap gap-3">
+                    <button class="tag-btn font-semibold py-2 px-5 rounded-full transition-all duration-200 bg-blue-200 text-blue-800" data-tag="Chad">Chad</button>
+                    <button class="tag-btn font-semibold py-2 px-5 rounded-full transition-all duration-200 bg-pink-200 text-pink-800" data-tag="Mom">Mom</button>
+                    <button class="tag-btn font-semibold py-2 px-5 rounded-full transition-all duration-200 bg-green-200 text-green-800" data-tag="Dad">Dad</button>
+                </div>
+            </div>
+            
+            <!-- Step 3: The Photo -->
+            <div class="p-4 bg-slate-100 rounded-xl">
+                <label class="block text-md font-semibold text-gray-700 mb-3 text-center">Step 3: Add a Photo (Optional)</label>
+                <div class="flex items-center gap-4">
+                    <img id="imagePreview" src="https://placehold.co/100x100/e2e8f0/9ca3af?text=Preview" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
+                    <div class="w-full">
+                        <input type="file" id="photoUpload" accept="image/*" class="hidden">
+                         <button id="uploadTriggerButton" type="button" class="w-full bg-white border border-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-xl hover:bg-gray-100 transition duration-200">
+                            Choose Photo
+                        </button>
+                        <p id="uploadStatus" class="text-xs text-center text-gray-500 mt-2 truncate"></p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Step 4: Add Button -->
+            <button id="addButton" class="w-full bg-blue-600 text-white font-bold py-4 px-6 rounded-xl shadow-md hover:bg-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-lg focus:outline-none focus:ring-4 focus:ring-blue-300">
+                Log This Dinner
             </button>
         </div>
-
-        <!-- Search Section -->
-        <div>
-            <input id="searchInput" type="text" placeholder="Search for a dinner (e.g., 'chili')" class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 transition duration-200">
-        </div>
-
-        <!-- Toggle Button for History -->
-        <div class="flex justify-center">
-            <button id="toggleButton" class="bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-full shadow-sm hover:bg-gray-300 transition duration-200">
-                Hide History
-            </button>
+        
+        <hr/>
+        
+        <!-- Search and Toggle Section -->
+        <div class="space-y-4">
+            <input id="searchInput" type="text" placeholder="Search meals or people..." class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
+            <div class="flex justify-center">
+                <button id="toggleButton" class="bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-full shadow-sm hover:bg-gray-300 transition duration-200">
+                    Hide History
+                </button>
+            </div>
         </div>
 
         <!-- Message Box -->
-        <div id="messageBox" class="p-3 bg-red-100 text-red-700 rounded-xl hidden"></div>
+        <div id="messageBox" class="p-3 rounded-xl hidden"></div>
 
         <!-- Dinner List -->
         <div id="dinnerList" class="space-y-4">
             <!-- Dinner entries will be dynamically inserted here -->
         </div>
+    </div>
 
+    <!-- Modal for showing dinner details and photo -->
+    <div id="dinnerModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-end mb-2">
+                <button id="closeModalBtn" class="text-gray-500 hover:text-gray-800 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div id="modalContent" class="space-y-4">
+                <img id="modalImage" class="w-full h-64 object-cover rounded-lg shadow-md" src="" alt="Dinner Photo" onerror="this.onerror=null;this.src='https://placehold.co/600x400/f87171/ffffff?text=Image+Not+Found';">
+                <div class="space-y-2">
+                    <p id="modalMeal" class="text-3xl font-bold text-gray-800"></p>
+                    <p id="modalDate" class="text-sm text-gray-500"></p>
+                    <div id="modalTags" class="flex flex-wrap gap-2"></div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, setDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const firebaseConfig = {
-          apiKey: "AIzaSyCFYbl_bS6EkQzZ5wFcdqfhX7C59ZB8B8c",
-          authDomain: "beaver-dinner-log.firebaseapp.com",
-          projectId: "beaver-dinner-log",
-          storageBucket: "beaver-dinner-log.firebasestorage.app",
-          messagingSenderId: "687256973524",
-         appId: "1:687256973524:web:ded99a14289a2e1649cb41"
-         };
-       
+        // --- Cloudinary Configuration ---
+        const cloudinaryCloudName = "dlchf76q4";
+        const cloudinaryUploadPreset = "family-dinner-log";
+        const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudinaryCloudName}/image/upload`;
 
-        // Initialize Firebase
-        setLogLevel('Debug');
+        // --- Secure Firebase Configuration ---
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-dinner-log';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // --- Initialize Firebase ---
+        setLogLevel('debug');
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
-        
-        // DOM Elements
-        const mealInput = document.getElementById('mealInput');
-        const addButton = document.getElementById('addButton');
-        const searchInput = document.getElementById('searchInput');
-        const toggleButton = document.getElementById('toggleButton');
-        const dinnerList = document.getElementById('dinnerList');
-        const messageBox = document.getElementById('messageBox');
-        const userIdDisplay = document.getElementById('userIdDisplay');
+        const dbCollectionPath = `artifacts/${appId}/public/data/dinners`;
 
-        // State variables
+        // --- DOM Elements ---
+        const elements = {
+            loadingOverlay: document.getElementById('loadingOverlay'),
+            inputForm: document.getElementById('inputForm'),
+            mealInput: document.getElementById('mealInput'),
+            dateInput: document.getElementById('dateInput'),
+            addButton: document.getElementById('addButton'),
+            searchInput: document.getElementById('searchInput'),
+            toggleButton: document.getElementById('toggleButton'),
+            dinnerList: document.getElementById('dinnerList'),
+            messageBox: document.getElementById('messageBox'),
+            userIdDisplay: document.getElementById('userIdDisplay'),
+            tagButtons: document.querySelectorAll('.tag-btn'),
+            dinnerModal: document.getElementById('dinnerModal'),
+            closeModalBtn: document.getElementById('closeModalBtn'),
+            modalImage: document.getElementById('modalImage'),
+            modalMeal: document.getElementById('modalMeal'),
+            modalDate: document.getElementById('modalDate'),
+            modalTags: document.getElementById('modalTags'),
+            photoUpload: document.getElementById('photoUpload'),
+            uploadTriggerButton: document.getElementById('uploadTriggerButton'),
+            imagePreview: document.getElementById('imagePreview'),
+            uploadStatus: document.getElementById('uploadStatus'),
+        };
+
+        // --- State variables ---
         let dinners = [];
         let isAuthenticated = false;
+        let userId = null;
+        let selectedTags = [];
+        let editingDocId = null;
+        let fileToUpload = null;
 
-        // Function to display messages to the user
+        // --- Main Functions ---
+
         function showMessage(message, type = 'error') {
-            messageBox.textContent = message;
-            messageBox.className = `p-3 rounded-xl transition-all duration-300 ${type === 'error' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`;
-            messageBox.style.display = 'block';
+            elements.messageBox.textContent = message;
+            elements.messageBox.className = `p-3 rounded-xl transition-all duration-300 text-center font-semibold ${type === 'error' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`;
+            elements.messageBox.style.display = 'block';
             setTimeout(() => {
-                messageBox.style.display = 'none';
+                elements.messageBox.style.display = 'none';
             }, 3000);
         }
 
-        // Function to render dinner entries on the page
         function renderDinners(entries) {
-            dinnerList.innerHTML = ''; // Clear existing entries
+            elements.dinnerList.innerHTML = '';
             if (entries.length === 0) {
-                dinnerList.innerHTML = '<p class="text-center text-gray-400">No dinners logged yet. Start by adding one!</p>';
+                elements.dinnerList.innerHTML = '<p class="text-center text-gray-500 py-4">No dinners logged yet. Let\'s add one!</p>';
                 return;
             }
-            
-            // Sort by most recent using JavaScript as Firestore orderBy() can require an index
-            entries.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-            entries.forEach(entry => {
-                const date = new Date(entry.date).toLocaleDateString('en-US', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
+            const groupedByDate = entries.reduce((acc, entry) => {
+                const date = new Date(entry.date).toLocaleDateString('en-US', { timeZone: 'UTC' });
+                if (!acc[date]) acc[date] = [];
+                acc[date].push(entry);
+                return acc;
+            }, {});
+
+            const sortedDates = Object.keys(groupedByDate).sort((a, b) => new Date(b) - new Date(a));
+
+            sortedDates.forEach(dateStr => {
+                const dateEntries = groupedByDate[dateStr];
+                const dateCard = document.createElement('div');
+                dateCard.className = 'p-4 rounded-xl bg-gray-50 space-y-3';
+                const dateHeader = document.createElement('p');
+                dateHeader.className = "text-md font-bold text-gray-600";
+                dateHeader.textContent = new Date(dateStr).toLocaleDateString('en-US', {
+                    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC'
                 });
-                const card = document.createElement('div');
-                card.className = 'bg-gray-50 p-4 rounded-xl shadow-sm hover:shadow-md transition duration-200 flex justify-between items-center';
-                card.innerHTML = `
-                    <div>
-                        <p class="text-sm font-light text-gray-500">${date}</p>
-                        <p class="text-lg md:text-xl font-medium text-gray-700 mt-1">${entry.meal}</p>
-                    </div>
-                    <button class="delete-btn text-gray-400 hover:text-red-500 transition-colors duration-200" data-id="${entry.id}">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                    </button>
-                `;
-                dinnerList.appendChild(card);
+                dateCard.appendChild(dateHeader);
+
+                dateEntries.forEach(entry => {
+                    const entryCard = document.createElement('div');
+                    entryCard.className = 'flex justify-between items-center bg-white p-3 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200';
+                    const tagsHtml = entry.tags?.map(tag => {
+                        let colorClass = 'bg-gray-200 text-gray-800';
+                        if (tag === 'Chad') colorClass = 'bg-blue-100 text-blue-800';
+                        if (tag === 'Mom') colorClass = 'bg-pink-100 text-pink-800';
+                        if (tag === 'Dad') colorClass = 'bg-green-100 text-green-800';
+                        return `<span class="text-xs ${colorClass} px-2 py-1 rounded-full font-medium">${tag}</span>`;
+                    }).join('') || '';
+
+                    entryCard.innerHTML = `
+                        <div class="flex items-center gap-4 flex-grow">
+                             ${entry.imageUrl ? `<img src="${entry.imageUrl}" onerror="this.style.display='none'" class="w-14 h-14 rounded-lg object-cover hidden sm:block cursor-pointer entry-click" data-id="${entry.id}">` : '<div class="w-14 h-14 bg-gray-100 rounded-lg hidden sm:flex items-center justify-center flex-shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg></div>'}
+                            <div class="cursor-pointer entry-click flex-grow" data-id="${entry.id}">
+                                <p class="text-lg font-medium text-gray-800">${entry.meal}</p>
+                                <div class="flex flex-wrap gap-1 mt-1">${tagsHtml}</div>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button class="edit-btn text-gray-400 hover:text-blue-500 transition-colors duration-200 p-1" data-id="${entry.id}" title="Edit"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg></button>
+                            <button class="delete-btn text-gray-400 hover:text-red-500 transition-colors duration-200 p-1" data-id="${entry.id}" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
+                        </div>
+                    `;
+                    dateCard.appendChild(entryCard);
+                });
+                elements.dinnerList.appendChild(dateCard);
             });
         }
 
-        // Handle search and filtering
         function filterDinners() {
-            const query = searchInput.value.toLowerCase();
+            const query = elements.searchInput.value.toLowerCase();
             const filtered = dinners.filter(entry =>
-                entry.meal.toLowerCase().includes(query)
+                entry.meal.toLowerCase().includes(query) ||
+                (entry.tags && entry.tags.some(tag => tag.toLowerCase().includes(query)))
             );
             renderDinners(filtered);
-
-            // If a search is performed, always show the history list
-            if (dinnerList.classList.contains('hidden')) {
-                dinnerList.classList.remove('hidden');
-                toggleButton.textContent = 'Hide History';
+            if (elements.dinnerList.classList.contains('hidden')) {
+                toggleHistory();
             }
         }
-        
-        // Add a new dinner entry to Firestore
-        async function addDinner() {
-            const meal = mealInput.value.trim();
-            if (!isAuthenticated) {
-                showMessage('The app is not yet connected. Please wait a moment and try again.', 'error');
-                return;
-            }
-            if (meal === '') {
-                showMessage('Please enter a meal to add.', 'error');
-                return;
-            }
 
+        function resetForm() {
+            elements.mealInput.value = '';
+            elements.dateInput.value = '';
+            selectedTags = [];
+            editingDocId = null;
+            elements.addButton.textContent = 'Log This Dinner';
+            
+            elements.tagButtons.forEach(btn => {
+                const tag = btn.dataset.tag;
+                btn.classList.remove('bg-blue-500', 'bg-pink-500', 'bg-green-500', 'text-white');
+                if (tag === 'Chad') btn.classList.add('bg-blue-200', 'text-blue-800');
+                if (tag === 'Mom') btn.classList.add('bg-pink-200', 'text-pink-800');
+                if (tag === 'Dad') btn.classList.add('bg-green-200', 'text-green-800');
+            });
+            
+            fileToUpload = null;
+            elements.photoUpload.value = '';
+            elements.imagePreview.src = 'https://placehold.co/100x100/e2e8f0/9ca3af?text=Preview';
+            elements.uploadStatus.textContent = '';
+            elements.mealInput.focus();
+        }
+
+        async function uploadImage(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', cloudinaryUploadPreset);
+            elements.uploadStatus.textContent = 'Uploading...';
+            elements.addButton.disabled = true;
             try {
-                // Add the new dinner to the Firestore collection
-                await addDoc(collection(db, `beaver_dinners`), {
-                    meal: meal,
-                    date: new Date().toISOString()
-                });
-                mealInput.value = '';
-                showMessage('Dinner added successfully!', 'success');
+                const response = await fetch(cloudinaryUrl, { method: 'POST', body: formData });
+                if (!response.ok) throw new Error('Upload failed');
+                const data = await response.json();
+                elements.uploadStatus.textContent = 'Success!';
+                return data.secure_url;
             } catch (error) {
-                console.error("Error adding document: ", error);
-                showMessage('Error adding dinner. Please try again.', 'error');
+                console.error("Cloudinary Upload Error:", error);
+                showMessage('Photo upload failed. Please try again.');
+                elements.uploadStatus.textContent = 'Upload failed.';
+                return null;
+            } finally {
+                elements.addButton.disabled = false;
             }
         }
 
-        // Delete a dinner entry from Firestore
-        async function deleteDinner(docId) {
-            if (!isAuthenticated) {
-                showMessage('The app is not connected to the database. Please try again.', 'error');
-                return;
+        async function handleAddOrUpdateDinner() {
+            const meal = elements.mealInput.value.trim();
+            if (!isAuthenticated) return showMessage('App is not connected.');
+            if (!meal) return showMessage('Please enter a meal to add.');
+
+            let imageUrl = editingDocId ? dinners.find(d => d.id === editingDocId)?.imageUrl : null;
+            if (fileToUpload) {
+                imageUrl = await uploadImage(fileToUpload);
+                if (!imageUrl) return;
             }
+
+            const dateStr = elements.dateInput.value;
+            const date = dateStr ? new Date(`${dateStr}T00:00:00Z`) : new Date();
+            date.setUTCHours(0, 0, 0, 0);
+            const newEntry = { meal, date: date.toISOString(), tags: selectedTags, imageUrl, authorId: userId };
+
             try {
-                // Delete the document from the Firestore collection
-                await deleteDoc(doc(db, `beaver_dinners`, docId));
-                showMessage('Dinner entry deleted.', 'success');
+                if (editingDocId) {
+                    await setDoc(doc(db, dbCollectionPath, editingDocId), newEntry);
+                    showMessage('Dinner updated!', 'success');
+                } else {
+                    await addDoc(collection(db, dbCollectionPath), newEntry);
+                    showMessage('Dinner added!', 'success');
+                }
+                resetForm();
+            } catch (error) {
+                console.error("Error saving to Firestore: ", error);
+                showMessage('Error saving dinner.');
+            }
+        }
+
+        async function deleteDinner(docId) {
+            if (!isAuthenticated) return showMessage('Not connected.');
+            try {
+                await deleteDoc(doc(db, dbCollectionPath, docId));
+                showMessage('Dinner deleted.', 'success');
             } catch (error) {
                 console.error("Error deleting document: ", error);
-                showMessage('Error deleting dinner. Please try again.', 'error');
+                showMessage('Error deleting dinner.');
             }
         }
 
-        // Toggle the visibility of the dinner list
         function toggleHistory() {
-            dinnerList.classList.toggle('hidden');
-            if (dinnerList.classList.contains('hidden')) {
-                toggleButton.textContent = 'Show History';
-            } else {
-                toggleButton.textContent = 'Hide History';
-            }
+            elements.dinnerList.classList.toggle('hidden');
+            elements.toggleButton.textContent = elements.dinnerList.classList.contains('hidden') ? 'Show History' : 'Hide History';
         }
 
-        // Use event delegation for delete buttons
-        dinnerList.addEventListener('click', async (e) => {
-            const deleteBtn = e.target.closest('.delete-btn');
-            if (deleteBtn) {
-                const docId = deleteBtn.getAttribute('data-id');
-                if (docId) {
-                    deleteDinner(docId);
+        function editDinner(docId) {
+            const entry = dinners.find(d => d.id === docId);
+            if (!entry) return;
+
+            resetForm();
+            elements.mealInput.value = entry.meal;
+            elements.dateInput.value = new Date(entry.date).toISOString().split('T')[0];
+            selectedTags = entry.tags || [];
+            editingDocId = docId;
+            elements.addButton.textContent = 'Update This Dinner';
+            if (entry.imageUrl) {
+                 elements.imagePreview.src = entry.imageUrl;
+                 elements.uploadStatus.textContent = "Current photo";
+            }
+
+            elements.tagButtons.forEach(btn => {
+                const tag = btn.dataset.tag;
+                if (selectedTags.includes(tag)) {
+                    if (tag === 'Chad') btn.classList.add('bg-blue-500', 'text-white'); else btn.classList.remove('bg-blue-500', 'text-white');
+                    if (tag === 'Mom') btn.classList.add('bg-pink-500', 'text-white'); else btn.classList.remove('bg-pink-500', 'text-white');
+                    if (tag === 'Dad') btn.classList.add('bg-green-500', 'text-white'); else btn.classList.remove('bg-green-500', 'text-white');
                 }
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function showDinnerModal(docId) {
+            const entry = dinners.find(d => d.id === docId);
+            if (!entry) return;
+
+            elements.modalMeal.textContent = entry.meal;
+            elements.modalDate.textContent = new Date(entry.date).toLocaleDateString('en-US', {
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC'
+            });
+
+            elements.modalTags.innerHTML = entry.tags?.map(tag => {
+                let colorClass = 'bg-gray-200 text-gray-800';
+                if (tag === 'Chad') colorClass = 'bg-blue-100 text-blue-800';
+                if (tag === 'Mom') colorClass = 'bg-pink-100 text-pink-800';
+                if (tag === 'Dad') colorClass = 'bg-green-100 text-green-800';
+                return `<span class="text-xs ${colorClass} px-2 py-1 rounded-full font-medium">${tag}</span>`;
+            }).join('') || '';
+
+            elements.modalImage.src = entry.imageUrl || 'https://placehold.co/600x400/f3f4f6/9ca3af?text=No+Image+Provided';
+            elements.dinnerModal.style.display = 'flex';
+        }
+
+        // --- Event Listeners ---
+        elements.addButton.addEventListener('click', handleAddOrUpdateDinner);
+        elements.searchInput.addEventListener('input', filterDinners);
+        elements.toggleButton.addEventListener('click', toggleHistory);
+        
+        elements.uploadTriggerButton.addEventListener('click', () => elements.photoUpload.click());
+        elements.photoUpload.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files[0]) {
+                const file = e.target.files[0];
+                fileToUpload = file;
+                elements.imagePreview.src = URL.createObjectURL(file);
+                elements.uploadStatus.textContent = file.name;
             }
         });
 
-        // Event Listeners for buttons and inputs
-        addButton.addEventListener('click', addDinner);
-        mealInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                addDinner();
-            }
+        elements.tagButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tag = btn.dataset.tag;
+                if (selectedTags.includes(tag)) {
+                    selectedTags = selectedTags.filter(t => t !== tag);
+                } else {
+                    selectedTags.push(tag);
+                }
+                
+                // Toggle classes based on tag
+                const isSelected = selectedTags.includes(tag);
+                if (tag === 'Chad') {
+                    btn.classList.toggle('bg-blue-200', !isSelected);
+                    btn.classList.toggle('text-blue-800', !isSelected);
+                    btn.classList.toggle('bg-blue-500', isSelected);
+                    btn.classList.toggle('text-white', isSelected);
+                } else if (tag === 'Mom') {
+                    btn.classList.toggle('bg-pink-200', !isSelected);
+                    btn.classList.toggle('text-pink-800', !isSelected);
+                    btn.classList.toggle('bg-pink-500', isSelected);
+                    btn.classList.toggle('text-white', isSelected);
+                } else if (tag === 'Dad') {
+                    btn.classList.toggle('bg-green-200', !isSelected);
+                    btn.classList.toggle('text-green-800', !isSelected);
+                    btn.classList.toggle('bg-green-500', isSelected);
+                    btn.classList.toggle('text-white', isSelected);
+                }
+            });
         });
-        searchInput.addEventListener('input', filterDinners);
-        toggleButton.addEventListener('click', toggleHistory);
+
+        elements.dinnerList.addEventListener('click', (e) => {
+            const deleteBtn = e.target.closest('.delete-btn');
+            const editBtn = e.target.closest('.edit-btn');
+            const entryElement = e.target.closest('.entry-click');
+            if (deleteBtn) deleteDinner(deleteBtn.dataset.id);
+            else if (editBtn) editDinner(editBtn.dataset.id);
+            else if (entryElement) showDinnerModal(entryElement.dataset.id);
+        });
         
-        // Set up Firebase auth and real-time data listener
-        onAuthStateChanged(auth, async (user) => {
+        elements.closeModalBtn.addEventListener('click', () => elements.dinnerModal.style.display = 'none');
+        window.addEventListener('click', (e) => { if (e.target === elements.dinnerModal) elements.dinnerModal.style.display = 'none'; });
+
+        // --- Firebase Authentication and Data Loading ---
+        async function authenticateUser() {
+            try {
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Authentication failed: ", error);
+                showMessage('Authentication failed.');
+                elements.loadingOverlay.style.display = 'none';
+            }
+        }
+        
+        onAuthStateChanged(auth, user => {
             if (user) {
                 isAuthenticated = true;
-                addButton.disabled = false;
-                userIdDisplay.textContent = `Authenticated User ID: ${user.uid}`;
-                // Set up the real-time listener for the dinners collection
-                onSnapshot(collection(db, `beaver_dinners`), (snapshot) => {
-                    const updatedDinners = [];
-                    snapshot.forEach(doc => {
-                        updatedDinners.push({ id: doc.id, ...doc.data() });
-                    });
-                    dinners = updatedDinners;
-                    renderDinners(dinners);
+                userId = user.uid;
+                elements.addButton.disabled = false;
+                elements.loadingOverlay.style.display = 'none';
+                elements.userIdDisplay.textContent = `Your User ID: ${user.uid}`;
+                onSnapshot(collection(db, dbCollectionPath), (snapshot) => {
+                    dinners = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    filterDinners();
+                }, (error) => {
+                    console.error("Error fetching data: ", error);
+                    showMessage("Could not fetch dinner history.");
                 });
             } else {
                 isAuthenticated = false;
-                addButton.disabled = true;
-                userIdDisplay.textContent = "Please wait, attempting to connect...";
-                try {
-                   await signInAnonymously(auth);
-                } catch (error) {
-                    console.error("Authentication failed: ", error);
-                    showMessage('Authentication failed. The most likely reason is that Anonymous Sign-in is not enabled in your Firebase console. Please go to Authentication -> Sign-in method to enable it.', 'error');
-                }
+                userId = null;
+                elements.addButton.disabled = true;
+                elements.userIdDisplay.textContent = "Connecting...";
             }
         });
+        
+        authenticateUser();
     </script>
-
 </body>
 </html>
