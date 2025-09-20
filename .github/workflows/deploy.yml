@@ -24,9 +24,9 @@ jobs:
         uses: cschleiden/replace-tokens@v1
         with:
           files: '["index.html"]'
-          # --- THESE ARE THE TWO NEW LINES TO ADD ---
-          token-prefix: '__'
-          token-suffix: '__'
+          # --- CORRECTED LINES: Changed to camelCase ---
+          tokenPrefix: '__'
+          tokenSuffix: '__'
         env:
           FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
           FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
