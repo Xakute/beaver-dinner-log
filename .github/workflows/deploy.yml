@@ -15,6 +15,10 @@ permissions:
 
 jobs:
   build-and-deploy:
+    # This is the new section that was missing
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
