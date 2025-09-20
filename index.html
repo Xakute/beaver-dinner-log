@@ -262,7 +262,7 @@
 
                         entryCard.innerHTML = `
                             <div class="flex items-center gap-4 flex-grow">
-                                ${entry.imageUrl ? `<img src="${entry.imageUrl}" onerror="this.style.display='none'" class="w-14 h-14 rounded-lg object-cover hidden sm:block cursor-pointer entry-click" data-id="${entry.id}">` : '<div class="w-14 h-14 bg-gray-100 rounded-lg hidden sm:flex items-center justify-center flex-shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg></div>'}
+                                ${entry.imageUrl ? `<img src="${entry.imageUrl}" onerror="this.style.display='none'" class="w-14 h-14 rounded-lg object-cover hidden sm:block cursor-pointer entry-click" data-id="${entry.id}">` : ''}
                                 <div class="cursor-pointer entry-click flex-grow" data-id="${entry.id}">
                                     <p class="text-lg font-medium text-gray-800">${entry.meal}</p>
                                     <div class="flex flex-wrap gap-1 mt-1">${tagsHtml}</div>
