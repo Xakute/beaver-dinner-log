@@ -1,13 +1,10 @@
 name: Deploy to GitHub Pages
 
 on:
-  # Run this workflow every time you push code to the 'main' branch
   push:
     branches: [ main ]
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# Allow this job to clone the repository and create a page deployment
 permissions:
   contents: read
   pages: write
@@ -15,7 +12,6 @@ permissions:
 
 jobs:
   build-and-deploy:
-    # This is the new section that was missing
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -28,6 +24,9 @@ jobs:
         uses: cschleiden/replace-tokens@v1
         with:
           files: '["index.html"]'
+          # --- THESE ARE THE TWO NEW LINES TO ADD ---
+          token-prefix: '__'
+          token-suffix: '__'
         env:
           FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
           FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
