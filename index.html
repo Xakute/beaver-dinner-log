@@ -260,9 +260,14 @@
                             return `<span class="text-xs ${colorClass} px-2 py-1 rounded-full font-medium">${tag}</span>`;
                         }).join('') || '';
 
+                        // *** THIS IS THE CORRECTED LINE ***
+                        const imageThumbnailHtml = entry.imageUrl 
+                            ? `<img src="${entry.imageUrl}" onerror="this.style.display='none'" class="w-14 h-14 rounded-lg object-cover flex-shrink-0 cursor-pointer entry-click" data-id="${entry.id}">` 
+                            : '';
+
                         entryCard.innerHTML = `
                             <div class="flex items-center gap-4 flex-grow">
-                                ${entry.imageUrl ? `<img src="${entry.imageUrl}" onerror="this.style.display='none'" class="w-14 h-14 rounded-lg object-cover hidden sm:block cursor-pointer entry-click" data-id="${entry.id}">` : ''}
+                                ${imageThumbnailHtml}
                                 <div class="cursor-pointer entry-click flex-grow" data-id="${entry.id}">
                                     <p class="text-lg font-medium text-gray-800">${entry.meal}</p>
                                     <div class="flex flex-wrap gap-1 mt-1">${tagsHtml}</div>
