@@ -187,7 +187,8 @@
             navigator.serviceWorker.register(
                 'data:application/javascript,' +
                 'const CACHE_NAME = "dinner-log-cache-v1";' +
-                'const urlsToCache = ["/"];' + // Adjust this if your app has multiple pages
+                // --- THIS LINE IS CORRECTED ---
+                'const urlsToCache = ["."];' + 
                 'self.addEventListener("install", event => {' +
                 '  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache)));' +
                 '});' +
