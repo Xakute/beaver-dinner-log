@@ -3,12 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- PWA Theme Color -->
+    <meta name="theme-color" content="#ffffff"/>
+    
     <title>Family Dinner Log</title>
-    <!-- Use a modern font -->
+    
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="data:application/json,{
+        &quot;name&quot;: &quot;Dinner Log&quot;,
+        &quot;short_name&quot;: &quot;DinnerLog&quot;,
+        &quot;start_url&quot;: &quot;.&quot;,
+        &quot;display&quot;: &quot;standalone&quot;,
+        &quot;background_color&quot;: &quot;#f3f4f6&quot;,
+        &quot;theme_color&quot;: &quot;#ffffff&quot;,
+        &quot;description&quot;: &quot;A simple log for family dinners.&quot;,
+        &quot;icons&quot;: [
+            {
+                &quot;src&quot;: &quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%234285F4'/%3E%3Ctext x='50' y='65' font-size='50' fill='white' text-anchor='middle' font-family='Arial, sans-serif' font-weight='bold'%3EDL%3C/text%3E%3C/svg%3E&quot;,
+                &quot;sizes&quot;: &quot;192x192&quot;,
+                &quot;type&quot;: &quot;image/svg+xml&quot;
+            },
+            {
+                &quot;src&quot;: &quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%234285F4'/%3E%3Ctext x='50' y='65' font-size='50' fill='white' text-anchor='middle' font-family='Arial, sans-serif' font-weight='bold'%3EDL%3C/text%3E%3C/svg%3E&quot;,
+                &quot;sizes&quot;: &quot;512x512&quot;,
+                &quot;type&quot;: &quot;image/svg+xml&quot;
+            }
+        ]
+    }">
+
+    <!-- Other head elements -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Tailwind CSS CDN for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
@@ -71,6 +98,7 @@
         <!-- User Info -->
         <p id="userIdDisplay" class="text-xs text-center text-gray-400 break-all p-2 bg-gray-50 rounded-md"></p>
 
+        <!-- ... Rest of your HTML body remains the same ... -->
         <!-- NEW: Redesigned Step-by-Step Input Form -->
         <div id="inputForm" class="space-y-4">
             <!-- Step 1: The Meal -->
@@ -154,10 +182,30 @@
     </div>
 
     <script type="module">
+        // --- THIS IS THE NEW PWA SERVICE WORKER SCRIPT ---
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register(
+                'data:application/javascript,' +
+                'const CACHE_NAME = "dinner-log-cache-v1";' +
+                'const urlsToCache = ["/"];' + // Adjust this if your app has multiple pages
+                'self.addEventListener("install", event => {' +
+                '  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache)));' +
+                '});' +
+                'self.addEventListener("fetch", event => {' +
+                '  event.respondWith(caches.match(event.request).then(response => response || fetch(event.request)));' +
+                '});'
+            ).then(function(registration) {
+                console.log('Service Worker registered with scope:', registration.scope);
+            }).catch(function(error) {
+                console.log('Service Worker registration failed:', error);
+            });
+        }
+
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, setDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // ... Rest of your JavaScript remains the same ...
         // --- Cloudinary Configuration ---
         const cloudinaryCloudName = "dlchf76q4";
         const cloudinaryUploadPreset = "family-dinner-log";
@@ -259,8 +307,7 @@
                             if (tag === 'Dad') colorClass = 'bg-green-100 text-green-800';
                             return `<span class="text-xs ${colorClass} px-2 py-1 rounded-full font-medium">${tag}</span>`;
                         }).join('') || '';
-
-                        // *** THIS IS THE CORRECTED LINE ***
+                        
                         const imageThumbnailHtml = entry.imageUrl 
                             ? `<img src="${entry.imageUrl}" onerror="this.style.display='none'" class="w-14 h-14 rounded-lg object-cover flex-shrink-0 cursor-pointer entry-click" data-id="${entry.id}">` 
                             : '';
