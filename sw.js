@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dinner-log-cache-v10'; // Increment cache version
+const CACHE_NAME = 'dinner-log-cache-v13'; // Increment cache version
 const urlsToCache = [
   '.',
   'index.html',
@@ -45,3 +45,4 @@ self.addEventListener('fetch', event => {
     )
   );
 });
+
