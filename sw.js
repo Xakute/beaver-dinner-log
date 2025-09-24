@@ -1,15 +1,13 @@
-// A simple service worker for basic offline functionality
-
-const CACHE_NAME = 'dinner-log-cache-v1';
-// This should include the root path of your GitHub Pages site.
-// For example, if your site is at username.github.io/dinner-log/,
-// you should cache '/dinner-log/'.
+const CACHE_NAME = 'dinner-log-cache-v2'; // Increment cache version
 const urlsToCache = [
-  '/dinner-log/' 
+  '.',
+  'index.html',
+  'manifest.json',
+  'icon.svg',
+  'icon-mono.svg'
 ];
 
 self.addEventListener('install', event => {
-  // Perform install steps
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(function(cache) {
@@ -19,15 +17,30 @@ self.addEventListener('install', event => {
   );
 });
 
+// Clean up old caches
+self.addEventListener('activate', event => {
+  const cacheWhitelist = [CACHE_NAME];
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          if (cacheWhitelist.indexOf(cacheName) === -1) {
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
+  );
+});
+
 self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
       .then(function(response) {
-        // Cache hit - return response
         if (response) {
-          return response;
+          return response; // Return from cache
         }
-        return fetch(event.request);
+        return fetch(event.request); // Fetch from network
       }
     )
   );
