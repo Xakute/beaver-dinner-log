@@ -1,17 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark"> <!-- Default to dark mode, can be controlled by OS -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- PWA Theme Color & Dark Mode Support -->
-    <meta name="color-scheme" content="light dark" />
-    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-    <meta name="theme-color" content="#1f2937" media="(prefers-color-scheme: dark)">
+    <!-- PWA Theme Color -->
+    <meta name="theme-color" content="#1e293b" media="(prefers-color-scheme: dark)"/>
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)"/>
     
     <title>Family Dinner Log</title>
     
-    <!-- Link to the Web App Manifest file -->
+    <!-- Web App Manifest -->
     <link rel="manifest" href="manifest.json">
 
     <!-- Other head elements -->
@@ -20,12 +19,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-      // Support for Tailwind CSS Dark Mode
-      if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-        document.documentElement.classList.add('dark')
-      } else {
-        document.documentElement.classList.remove('dark')
-      }
+        // Tailwind dark mode configuration
+        tailwind.config = {
+          darkMode: 'class', // or 'media'
+        }
+        // Honor the OS-level dark mode setting
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark')
+        } else {
+          document.documentElement.classList.remove('dark')
+        }
     </script>
     <style>
         body {
@@ -34,92 +37,100 @@
         .modal {
             display: none;
             position: fixed;
-            z-index: 1000; left: 0; top: 0; width: 100%; height: 100%;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
             overflow: auto;
             background-color: rgba(0,0,0,0.8);
             backdrop-filter: blur(5px);
-            justify-content: center; align-items: center;
+            justify-content: center;
+            align-items: center;
             animation: fadeIn 0.3s ease-out;
         }
         .modal-content {
-            padding: 24px; border-radius: 1rem; width: 90%;
-            max-width: 500px;
-            box-shadow: 0 4px_6px rgba(0, 0, 0, 0.1);
             animation: slideIn 0.3s ease-out;
         }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideIn { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
     </style>
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 min-h-screen flex items-center justify-center p-4">
+<body class="bg-slate-100 dark:bg-slate-900 min-h-screen flex items-center justify-center p-4 transition-colors duration-300">
 
     <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="fixed inset-0 bg-white dark:bg-gray-900 bg-opacity-75 dark:bg-opacity-75 z-50 flex items-center justify-center">
+    <div id="loadingOverlay" class="fixed inset-0 bg-white dark:bg-slate-900 bg-opacity-75 dark:bg-opacity-75 z-50 flex items-center justify-center">
         <div class="text-center">
             <svg class="animate-spin h-10 w-10 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            <p class="text-gray-600 dark:text-gray-300 mt-3 font-semibold">Connecting to the Dinner Log...</p>
+            <p class="text-slate-600 dark:text-slate-400 mt-3 font-semibold">Connecting to the Dinner Log...</p>
         </div>
     </div>
 
-    <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl w-full max-w-2xl p-6 md:p-8 space-y-6">
+    <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-xl w-full max-w-2xl p-6 md:p-8 space-y-6">
         <div class="text-center">
-            <h1 class="text-3xl md:text-4xl font-bold text-gray-800 dark:text-gray-100">Family Dinner Log</h1>
-            <p class="text-gray-500 dark:text-gray-400 mt-1">Keep track of your delicious meals together.</p>
+            <h1 class="text-3xl md:text-4xl font-bold text-slate-800 dark:text-slate-100">Family Dinner Log</h1>
+            <p class="text-slate-500 dark:text-slate-400 mt-1">Keep track of your delicious meals together.</p>
         </div>
 
         <!-- User Info -->
-        <p id="userIdDisplay" class="text-xs text-center text-gray-400 dark:text-gray-500 break-all p-2 bg-gray-50 dark:bg-gray-700 rounded-md"></p>
+        <p id="userIdDisplay" class="text-xs text-center text-slate-400 dark:text-slate-500 break-all p-2 bg-slate-50 dark:bg-slate-700/50 rounded-md"></p>
 
-        <!-- Step-by-Step Input Form -->
+        <!-- NEW: Redesigned Step-by-Step Input Form -->
         <div id="inputForm" class="space-y-4">
             <!-- Step 1: The Meal -->
-            <div class="p-4 bg-slate-100 dark:bg-slate-700 rounded-xl space-y-3">
-                <label class="block text-md font-semibold text-gray-700 dark:text-gray-200 text-center">Step 1: What was the meal?</label>
-                <input id="mealInput" type="text" placeholder="e.g., Spaghetti and Meatballs" class="w-full p-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
-                <input id="dateInput" type="date" class="w-full p-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
+            <div class="p-4 bg-slate-100 dark:bg-slate-900/50 rounded-xl space-y-3">
+                <label class="block text-md font-semibold text-slate-700 dark:text-slate-200 text-center">Step 1: What was the meal?</label>
+                <input id="mealInput" type="text" placeholder="e.g., Spaghetti and Meatballs" class="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
+                <input id="dateInput" type="date" class="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
             </div>
 
             <!-- Step 2: Who Ate? -->
-            <div class="p-4 bg-slate-100 dark:bg-slate-700 rounded-xl">
-                <label class="block text-md font-semibold text-gray-700 dark:text-gray-200 mb-3 text-center">Step 2: Who ate this meal?</label>
+            <div class="p-4 bg-slate-100 dark:bg-slate-900/50 rounded-xl">
+                <label class="block text-md font-semibold text-slate-700 dark:text-slate-200 mb-3 text-center">Step 2: Who ate this meal?</label>
                 <div class="flex justify-center flex-wrap gap-3">
-                    <button class="tag-btn font-semibold py-2 px-5 rounded-full transition-all duration-200 bg-blue-200 text-blue-800 dark:bg-blue-800 dark:text-blue-100" data-tag="Chad">Chad</button>
-                    <button class="tag-btn font-semibold py-2 px-5 rounded-full transition-all duration-200 bg-pink-200 text-pink-800 dark:bg-pink-800 dark:text-pink-100" data-tag="Mom">Mom</button>
-                    <button class="tag-btn font-semibold py-2 px-5 rounded-full transition-all duration-200 bg-green-200 text-green-800 dark:bg-green-800 dark:text-green-100" data-tag="Dad">Dad</button>
+                    <button class="tag-btn font-semibold py-2 px-5 rounded-full transition-all duration-200" data-tag="Chad" data-unselected-classes="bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200" data-selected-classes="bg-blue-600 text-white dark:bg-blue-500 ring-2 ring-blue-300 dark:ring-blue-400 ring-offset-2 ring-offset-white dark:ring-offset-slate-800">Chad</button>
+                    <button class="tag-btn font-semibold py-2 px-5 rounded-full transition-all duration-200" data-tag="Mom" data-unselected-classes="bg-pink-100 text-pink-800 dark:bg-pink-900/50 dark:text-pink-200" data-selected-classes="bg-pink-600 text-white dark:bg-pink-500 ring-2 ring-pink-300 dark:ring-pink-400 ring-offset-2 ring-offset-white dark:ring-offset-slate-800">Mom</button>
+                    <button class="tag-btn font-semibold py-2 px-5 rounded-full transition-all duration-200" data-tag="Dad" data-unselected-classes="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200" data-selected-classes="bg-green-600 text-white dark:bg-green-500 ring-2 ring-green-300 dark:ring-green-400 ring-offset-2 ring-offset-white dark:ring-offset-slate-800">Dad</button>
                 </div>
             </div>
             
             <!-- Step 3: The Photo -->
-            <div class="p-4 bg-slate-100 dark:bg-slate-700 rounded-xl">
-                <label class="block text-md font-semibold text-gray-700 dark:text-gray-200 mb-3 text-center">Step 3: Add a Photo (Optional)</label>
+            <div class="p-4 bg-slate-100 dark:bg-slate-900/50 rounded-xl">
+                <label class="block text-md font-semibold text-slate-700 dark:text-slate-200 mb-3 text-center">Step 3: Add a Photo (Optional)</label>
                 <div class="flex items-center gap-4">
-                    <img id="imagePreview" src="https://placehold.co/100x100/e2e8f0/9ca3af?text=Preview" class="w-20 h-20 rounded-lg object-cover flex-shrink-0 bg-slate-200 dark:bg-slate-600">
+                    <img id="imagePreview" src="https://placehold.co/100x100/e2e8f0/9ca3af?text=Preview" class="w-20 h-20 rounded-lg object-cover flex-shrink-0 bg-slate-200 dark:bg-slate-700">
                     <div class="w-full">
                         <input type="file" id="photoUpload" accept="image/*" class="hidden">
-                         <button id="uploadTriggerButton" type="button" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 font-semibold py-2 px-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-600 transition duration-200">
+                         <button id="uploadTriggerButton" type="button" class="w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 font-semibold py-2 px-4 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-600 transition duration-200">
                             Choose Photo
                         </button>
-                        <p id="uploadStatus" class="text-xs text-center text-gray-500 dark:text-gray-400 mt-2 truncate"></p>
+                        <p id="uploadStatus" class="text-xs text-center text-slate-500 dark:text-slate-400 mt-2 truncate"></p>
                     </div>
                 </div>
             </div>
             
             <!-- Step 4: Add Button -->
-            <button id="addButton" class="w-full bg-blue-600 text-white font-bold py-4 px-6 rounded-xl shadow-md hover:bg-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-lg focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800">
+            <button id="addButton" class="w-full bg-blue-600 text-white font-bold py-4 px-6 rounded-xl shadow-md hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-lg focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800">
                 Log This Dinner
             </button>
         </div>
         
-        <hr class="border-gray-200 dark:border-gray-600"/>
+        <hr class="border-slate-200 dark:border-slate-700"/>
         
         <!-- Search and Toggle Section -->
         <div class="space-y-4">
-            <input id="searchInput" type="text" placeholder="Search meals or people..." class="w-full p-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
+            <input id="searchInput" type="text" placeholder="Search meals or people..." class="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
             <div class="flex justify-center">
-                <button id="toggleButton" class="bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 font-semibold py-2 px-4 rounded-full shadow-sm hover:bg-gray-300 dark:hover:bg-gray-500 transition duration-200">
+                <button id="toggleButton" class="bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold py-2 px-4 rounded-full shadow-sm hover:bg-slate-300 dark:hover:bg-slate-600 transition duration-200">
                     Hide History
                 </button>
             </div>
@@ -136,34 +147,32 @@
 
     <!-- Modal for showing dinner details and photo -->
     <div id="dinnerModal" class="modal">
-        <div class="modal-content bg-white dark:bg-gray-800">
+        <div class="modal-content bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-lg">
             <div class="flex justify-end mb-2">
-                <button id="closeModalBtn" class="text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
+                <button id="closeModalBtn" class="text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
             </div>
             <div id="modalContent" class="space-y-4">
-                <!-- IMAGE FIX: Replaced object-cover with object-contain and added a max-height -->
-                <img id="modalImage" class="w-full rounded-lg shadow-md max-h-[70vh] object-contain" src="" alt="Dinner Photo" onerror="this.onerror=null;this.src='https://placehold.co/600x400/f87171/ffffff?text=Image+Not+Found';">
-                <div class="space-y-2 text-center">
-                    <p id="modalMeal" class="text-3xl font-bold text-gray-800 dark:text-gray-100"></p>
-                    <p id="modalDate" class="text-sm text-gray-500 dark:text-gray-400"></p>
-                    <div id="modalTags" class="flex flex-wrap gap-2 justify-center"></div>
+                <img id="modalImage" class="w-full max-h-[60vh] object-contain rounded-lg shadow-md" src="" alt="Dinner Photo" onerror="this.onerror=null;this.src='https://placehold.co/600x400/f87171/ffffff?text=Image+Not+Found';">
+                <div class="space-y-2">
+                    <p id="modalMeal" class="text-3xl font-bold text-slate-800 dark:text-slate-100"></p>
+                    <p id="modalDate" class="text-sm text-slate-500 dark:text-slate-400"></p>
+                    <div id="modalTags" class="flex flex-wrap gap-2"></div>
                 </div>
             </div>
         </div>
     </div>
 
     <script type="module">
+        // --- PWA SERVICE WORKER ---
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js').then(registration => {
-                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
-                }, err => {
-                    console.log('ServiceWorker registration failed: ', err);
-                });
+            navigator.serviceWorker.register('sw.js').then(function(registration) {
+                console.log('Service Worker registered with scope:', registration.scope);
+            }).catch(function(error) {
+                console.log('Service Worker registration failed:', error);
             });
         }
 
@@ -171,11 +180,13 @@
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, setDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // ... Rest of your JavaScript remains the same ...
+        // --- Cloudinary Configuration ---
         const cloudinaryCloudName = "dlchf76q4";
         const cloudinaryUploadPreset = "family-dinner-log";
         const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudinaryCloudName}/image/upload`;
 
+        // --- Firebase Configuration ---
+        // These placeholders will be replaced by GitHub Actions
         const firebaseConfig = {
             apiKey: "__FIREBASE_API_KEY__",
             authDomain: "__FIREBASE_AUTH_DOMAIN__",
@@ -186,12 +197,14 @@
         };
 
         try {
+            // --- Initialize Firebase ---
             setLogLevel('debug');
             const app = initializeApp(firebaseConfig);
             const db = getFirestore(app);
             const auth = getAuth(app);
             const dbCollectionPath = `dinners/all/entries`;
 
+            // --- DOM Elements ---
             const elements = {
                 loadingOverlay: document.getElementById('loadingOverlay'),
                 mealInput: document.getElementById('mealInput'),
@@ -215,6 +228,7 @@
                 uploadStatus: document.getElementById('uploadStatus'),
             };
 
+            // --- State variables ---
             let dinners = [];
             let isAuthenticated = false;
             let userId = null;
@@ -222,17 +236,21 @@
             let editingDocId = null;
             let fileToUpload = null;
 
+            // --- Main Functions ---
+
             function showMessage(message, type = 'error') {
                 elements.messageBox.textContent = message;
-                elements.messageBox.className = `p-3 rounded-xl transition-all duration-300 text-center font-semibold ${type === 'error' ? 'bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-200' : 'bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-200'}`;
+                elements.messageBox.className = `p-3 rounded-xl transition-all duration-300 text-center font-semibold ${type === 'error' ? 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-200' : 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-200'}`;
                 elements.messageBox.style.display = 'block';
-                setTimeout(() => { elements.messageBox.style.display = 'none'; }, 4000);
+                setTimeout(() => {
+                    elements.messageBox.style.display = 'none';
+                }, 4000);
             }
 
             function renderDinners(entries) {
                 elements.dinnerList.innerHTML = '';
                 if (entries.length === 0) {
-                    elements.dinnerList.innerHTML = '<p class="text-center text-gray-500 dark:text-gray-400 py-4">No dinners logged yet. Let\'s add one!</p>';
+                    elements.dinnerList.innerHTML = '<p class="text-center text-slate-500 dark:text-slate-400 py-4">No dinners logged yet. Let\'s add one!</p>';
                     return;
                 }
                 const groupedByDate = entries.reduce((acc, entry) => {
@@ -245,19 +263,21 @@
                 sortedDates.forEach(dateStr => {
                     const dateEntries = groupedByDate[dateStr];
                     const dateCard = document.createElement('div');
-                    dateCard.className = 'p-4 rounded-xl bg-gray-50 dark:bg-gray-700/50 space-y-3';
+                    dateCard.className = 'p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 space-y-3';
                     const dateHeader = document.createElement('p');
-                    dateHeader.className = "text-md font-bold text-gray-600 dark:text-gray-300";
-                    dateHeader.textContent = new Date(dateStr).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+                    dateHeader.className = "text-md font-bold text-slate-600 dark:text-slate-300";
+                    dateHeader.textContent = new Date(dateStr).toLocaleDateString('en-US', {
+                        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC'
+                    });
                     dateCard.appendChild(dateHeader);
                     dateEntries.forEach(entry => {
                         const entryCard = document.createElement('div');
-                        entryCard.className = 'flex justify-between items-center bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200';
+                        entryCard.className = 'flex justify-between items-center bg-white dark:bg-slate-700 p-3 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200';
                         const tagsHtml = entry.tags?.map(tag => {
-                            let colorClass = 'bg-gray-200 text-gray-800 dark:bg-gray-600 dark:text-gray-200';
-                            if (tag === 'Chad') colorClass = 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
-                            if (tag === 'Mom') colorClass = 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200';
-                            if (tag === 'Dad') colorClass = 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+                            let colorClass = '';
+                            if (tag === 'Chad') colorClass = 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200';
+                            if (tag === 'Mom') colorClass = 'bg-pink-100 text-pink-800 dark:bg-pink-900/50 dark:text-pink-200';
+                            if (tag === 'Dad') colorClass = 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200';
                             return `<span class="text-xs ${colorClass} px-2 py-1 rounded-full font-medium">${tag}</span>`;
                         }).join('') || '';
                         
@@ -269,13 +289,13 @@
                             <div class="flex items-center gap-4 flex-grow">
                                 ${imageThumbnailHtml}
                                 <div class="cursor-pointer entry-click flex-grow" data-id="${entry.id}">
-                                    <p class="text-lg font-medium text-gray-800 dark:text-gray-100">${entry.meal}</p>
+                                    <p class="text-lg font-medium text-slate-800 dark:text-slate-100">${entry.meal}</p>
                                     <div class="flex flex-wrap gap-1 mt-1">${tagsHtml}</div>
                                 </div>
                             </div>
                             <div class="flex space-x-2">
-                                <button class="edit-btn text-gray-400 dark:text-gray-500 hover:text-blue-500 transition-colors duration-200 p-1" data-id="${entry.id}" title="Edit"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg></button>
-                                <button class="delete-btn text-gray-400 dark:text-gray-500 hover:text-red-500 transition-colors duration-200 p-1" data-id="${entry.id}" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
+                                <button class="edit-btn text-slate-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-200 p-1" data-id="${entry.id}" title="Edit"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg></button>
+                                <button class="delete-btn text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors duration-200 p-1" data-id="${entry.id}" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
                             </div>
                         `;
                         dateCard.appendChild(entryCard);
@@ -291,7 +311,23 @@
                     (entry.tags && entry.tags.some(tag => tag.toLowerCase().includes(query)))
                 );
                 renderDinners(filtered);
-                if (elements.dinnerList.classList.contains('hidden')) { toggleHistory(); }
+                if (elements.dinnerList.classList.contains('hidden')) {
+                    toggleHistory();
+                }
+            }
+            
+            // --- THIS IS THE CORRECTED FUNCTION FOR TAG BUTTONS ---
+            function applyTagStyles(btn, isSelected) {
+                const unselectedClasses = btn.dataset.unselectedClasses.split(' ');
+                const selectedClasses = btn.dataset.selectedClasses.split(' ');
+
+                if (isSelected) {
+                    btn.classList.remove(...unselectedClasses);
+                    btn.classList.add(...selectedClasses);
+                } else {
+                    btn.classList.remove(...selectedClasses);
+                    btn.classList.add(...unselectedClasses);
+                }
             }
 
             function resetForm() {
@@ -300,13 +336,7 @@
                 selectedTags = [];
                 editingDocId = null;
                 elements.addButton.textContent = 'Log This Dinner';
-                elements.tagButtons.forEach(btn => {
-                    const tag = btn.dataset.tag;
-                    btn.classList.remove('dark:bg-blue-500', 'dark:bg-pink-500', 'dark:bg-green-500', 'dark:text-white', 'bg-blue-500', 'bg-pink-500', 'bg-green-500', 'text-white');
-                    if (tag === 'Chad') btn.classList.add('bg-blue-200', 'text-blue-800', 'dark:bg-blue-800', 'dark:text-blue-100');
-                    if (tag === 'Mom') btn.classList.add('bg-pink-200', 'text-pink-800', 'dark:bg-pink-800', 'dark:text-pink-100');
-                    if (tag === 'Dad') btn.classList.add('bg-green-200', 'text-green-800', 'dark:bg-green-800', 'dark:text-green-100');
-                });
+                elements.tagButtons.forEach(btn => applyTagStyles(btn, false)); // Correctly reset styles
                 fileToUpload = null;
                 elements.photoUpload.value = '';
                 elements.imagePreview.src = 'https://placehold.co/100x100/e2e8f0/9ca3af?text=Preview';
@@ -394,13 +424,7 @@
                     elements.uploadStatus.textContent = "Current photo";
                 }
                 elements.tagButtons.forEach(btn => {
-                    const tag = btn.dataset.tag;
-                    if (selectedTags.includes(tag)) {
-                        btn.classList.add('text-white');
-                        if (tag === 'Chad') btn.classList.add('bg-blue-500', 'dark:bg-blue-500');
-                        if (tag === 'Mom') btn.classList.add('bg-pink-500', 'dark:bg-pink-500');
-                        if (tag === 'Dad') btn.classList.add('bg-green-500', 'dark:bg-green-500');
-                    }
+                    applyTagStyles(btn, selectedTags.includes(btn.dataset.tag));
                 });
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
@@ -409,22 +433,18 @@
                 const entry = dinners.find(d => d.id === docId);
                 if (!entry) return;
                 elements.modalMeal.textContent = entry.meal;
-                elements.modalDate.textContent = new Date(entry.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
-                const modalTagsContainer = elements.modalTags;
-                modalTagsContainer.innerHTML = '';
-                const tags = entry.tags || [];
-                tags.forEach(tag => {
-                    const span = document.createElement('span');
-                    span.textContent = tag;
-                    span.className = 'text-xs px-2 py-1 rounded-full font-medium';
-                    let colorClass = 'bg-gray-200 text-gray-800 dark:bg-gray-600 dark:text-gray-200';
-                    if (tag === 'Chad') colorClass = 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
-                    if (tag === 'Mom') colorClass = 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200';
-                    if (tag === 'Dad') colorClass = 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-                    span.className += ' ' + colorClass;
-                    modalTagsContainer.appendChild(span);
+                elements.modalDate.textContent = new Date(entry.date).toLocaleDateString('en-US', {
+                    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC'
                 });
-                elements.modalImage.src = entry.imageUrl || 'https://placehold.co/600x400/f3f4f6/9ca3af?text=No+Image+Provided';
+                elements.modalTags.innerHTML = entry.tags?.map(tag => {
+                    let colorClass = '';
+                    if (tag === 'Chad') colorClass = 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200';
+                    if (tag === 'Mom') colorClass = 'bg-pink-100 text-pink-800 dark:bg-pink-900/50 dark:text-pink-200';
+                    if (tag === 'Dad') colorClass = 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200';
+                    return `<span class="text-xs ${colorClass} px-2 py-1 rounded-full font-medium">${tag}</span>`;
+                }).join('') || '';
+                elements.modalImage.src = entry.imageUrl || '';
+                elements.modalImage.style.display = entry.imageUrl ? 'block' : 'none';
                 elements.dinnerModal.style.display = 'flex';
             }
 
@@ -441,21 +461,21 @@
                     elements.uploadStatus.textContent = file.name;
                 }
             });
+            
+            // --- INITIALIZE TAG BUTTON STYLES ---
             elements.tagButtons.forEach(btn => {
+                applyTagStyles(btn, false); // Set initial unselected styles
                 btn.addEventListener('click', () => {
                     const tag = btn.dataset.tag;
-                    const isSelected = selectedTags.includes(tag);
-                    if (isSelected) {
+                    if (selectedTags.includes(tag)) {
                         selectedTags = selectedTags.filter(t => t !== tag);
                     } else {
                         selectedTags.push(tag);
                     }
-                    btn.classList.toggle('text-white', !isSelected);
-                    if (tag === 'Chad') btn.classList.toggle('bg-blue-500', !isSelected);
-                    if (tag === 'Mom') btn.classList.toggle('bg-pink-500', !isSelected);
-                    if (tag === 'Dad') btn.classList.toggle('bg-green-500', !isSelected);
+                    applyTagStyles(btn, selectedTags.includes(tag));
                 });
             });
+
             elements.dinnerList.addEventListener('click', (e) => {
                 const deleteBtn = e.target.closest('.delete-btn');
                 const editBtn = e.target.closest('.edit-btn');
@@ -464,16 +484,16 @@
                 else if (editBtn) editDinner(editBtn.dataset.id);
                 else if (entryElement) showDinnerModal(entryElement.dataset.id);
             });
-            elements.closeModalBtn.addEventListener('click', () => { elements.dinnerModal.style.display = 'none'; });
+            elements.closeModalBtn.addEventListener('click', () => elements.dinnerModal.style.display = 'none');
             window.addEventListener('click', (e) => { if (e.target === elements.dinnerModal) elements.dinnerModal.style.display = 'none'; });
 
+            // --- Firebase Authentication and Data Loading ---
             onAuthStateChanged(auth, user => {
                 if (user) {
                     isAuthenticated = true;
                     userId = user.uid;
                     elements.addButton.disabled = false;
                     elements.loadingOverlay.style.display = 'none';
-
                     elements.userIdDisplay.textContent = `Your User ID: ${user.uid}`;
                     onSnapshot(collection(db, dbCollectionPath), (snapshot) => {
                         dinners = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -498,7 +518,12 @@
         } catch (error) {
             console.error("Failed to initialize the application:", error);
             document.getElementById('loadingOverlay').style.display = 'none';
-            document.body.innerHTML = `<div class="text-center p-8 text-red-600 dark:text-red-400">Application Error. Check console.</div>`;
+            const body = document.querySelector('body');
+            body.innerHTML = `<div class="text-center p-8">
+                <h1 class="text-2xl font-bold text-red-600 dark:text-red-400">Application Error</h1>
+                <p class="text-slate-700 dark:text-slate-300 mt-2">Could not initialize the application. This is often due to an incorrect Firebase configuration.</p>
+                <p class="text-slate-500 dark:text-slate-400 mt-4">Please make sure you have pasted your Firebase config details correctly into the HTML file.</p>
+            </div>`;
         }
     </script>
 </body>
