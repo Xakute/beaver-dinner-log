@@ -1,7 +1,7 @@
 // --- PWA Service Worker ---
 
 // This version number is crucial. Every time we want the app to download new files (like a new icon or a new HTML file), we must increase this number.
-const CACHE_NAME = "dinner-log-cache-v12";
+const CACHE_NAME = "dinner-log-cache-v14";
 
 // This is the list of essential files that make up our app. The service worker will save these for offline use.
 const urlsToCache = [
