@@ -145,7 +145,7 @@
         </div>
     </div>
 
-    <!-- Modal for showing dinner details and photo -->
+    <!-- Main Modal for showing dinner details and photo -->
     <div id="dinnerModal" class="modal">
         <div class="modal-content bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-lg">
             <div class="flex justify-end mb-2">
@@ -165,6 +165,25 @@
             </div>
         </div>
     </div>
+    
+    <!-- NEW: Delete Confirmation Modal -->
+    <div id="deleteConfirmModal" class="modal">
+        <div class="modal-content bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-sm p-6 text-center">
+            <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-100">Are you sure?</h3>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">
+                You are about to permanently delete the entry for <strong id="deleteMealName" class="font-bold"></strong>. This action cannot be undone.
+            </p>
+            <div class="mt-6 flex justify-center gap-4">
+                <button id="cancelDeleteBtn" class="px-6 py-2 rounded-lg bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-200 font-semibold hover:bg-slate-300 dark:hover:bg-slate-500 transition-colors">
+                    Cancel
+                </button>
+                <button id="confirmDeleteBtn" class="px-6 py-2 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors">
+                    Yes, Delete
+                </button>
+            </div>
+        </div>
+    </div>
+
 
     <script type="module">
         // --- PWA SERVICE WORKER ---
@@ -226,6 +245,10 @@
                 uploadTriggerButton: document.getElementById('uploadTriggerButton'),
                 imagePreview: document.getElementById('imagePreview'),
                 uploadStatus: document.getElementById('uploadStatus'),
+                deleteConfirmModal: document.getElementById('deleteConfirmModal'),
+                cancelDeleteBtn: document.getElementById('cancelDeleteBtn'),
+                confirmDeleteBtn: document.getElementById('confirmDeleteBtn'),
+                deleteMealName: document.getElementById('deleteMealName'),
             };
 
             // --- State variables ---
@@ -235,6 +258,7 @@
             let selectedTags = [];
             let editingDocId = null;
             let fileToUpload = null;
+            let docIdToDelete = null; // To store the ID of the doc to be deleted
 
             // --- Main Functions ---
 
@@ -316,7 +340,6 @@
                 }
             }
             
-            // --- THIS IS THE CORRECTED FUNCTION FOR TAG BUTTONS ---
             function applyTagStyles(btn, isSelected) {
                 const unselectedClasses = btn.dataset.unselectedClasses.split(' ');
                 const selectedClasses = btn.dataset.selectedClasses.split(' ');
@@ -336,7 +359,7 @@
                 selectedTags = [];
                 editingDocId = null;
                 elements.addButton.textContent = 'Log This Dinner';
-                elements.tagButtons.forEach(btn => applyTagStyles(btn, false)); // Correctly reset styles
+                elements.tagButtons.forEach(btn => applyTagStyles(btn, false));
                 fileToUpload = null;
                 elements.photoUpload.value = '';
                 elements.imagePreview.src = 'https://placehold.co/100x100/e2e8f0/9ca3af?text=Preview';
@@ -393,17 +416,36 @@
                     showMessage('Error saving dinner.');
                 }
             }
+            
+            // --- NEW: Functions to handle delete confirmation ---
+            function openDeleteModal(docId) {
+                const entry = dinners.find(d => d.id === docId);
+                if (!entry) return;
+                docIdToDelete = docId;
+                elements.deleteMealName.textContent = `"${entry.meal}"`;
+                elements.deleteConfirmModal.style.display = 'flex';
+            }
 
-            async function deleteDinner(docId) {
+            function closeDeleteModal() {
+                docIdToDelete = null;
+                elements.deleteConfirmModal.style.display = 'none';
+            }
+
+            async function confirmDelete() {
+                if (!docIdToDelete) return;
                 if (!isAuthenticated) return showMessage('Not connected.');
+                
                 try {
-                    await deleteDoc(doc(db, dbCollectionPath, docId));
+                    await deleteDoc(doc(db, dbCollectionPath, docIdToDelete));
                     showMessage('Dinner deleted.', 'success');
                 } catch (error) {
                     console.error("Error deleting document: ", error);
                     showMessage('Error deleting dinner.');
+                } finally {
+                    closeDeleteModal();
                 }
             }
+
 
             function toggleHistory() {
                 elements.dinnerList.classList.toggle('hidden');
@@ -462,9 +504,8 @@
                 }
             });
             
-            // --- INITIALIZE TAG BUTTON STYLES ---
             elements.tagButtons.forEach(btn => {
-                applyTagStyles(btn, false); // Set initial unselected styles
+                applyTagStyles(btn, false); 
                 btn.addEventListener('click', () => {
                     const tag = btn.dataset.tag;
                     if (selectedTags.includes(tag)) {
@@ -480,12 +521,19 @@
                 const deleteBtn = e.target.closest('.delete-btn');
                 const editBtn = e.target.closest('.edit-btn');
                 const entryElement = e.target.closest('.entry-click');
-                if (deleteBtn) deleteDinner(deleteBtn.dataset.id);
+                if (deleteBtn) openDeleteModal(deleteBtn.dataset.id); // MODIFIED
                 else if (editBtn) editDinner(editBtn.dataset.id);
                 else if (entryElement) showDinnerModal(entryElement.dataset.id);
             });
+            
             elements.closeModalBtn.addEventListener('click', () => elements.dinnerModal.style.display = 'none');
             window.addEventListener('click', (e) => { if (e.target === elements.dinnerModal) elements.dinnerModal.style.display = 'none'; });
+            
+            // --- NEW: Delete Modal Listeners ---
+            elements.cancelDeleteBtn.addEventListener('click', closeDeleteModal);
+            elements.confirmDeleteBtn.addEventListener('click', confirmDelete);
+            window.addEventListener('click', (e) => { if (e.target === elements.deleteConfirmModal) closeDeleteModal(); });
+
 
             // --- Firebase Authentication and Data Loading ---
             onAuthStateChanged(auth, user => {
@@ -528,5 +576,3 @@
     </script>
 </body>
 </html>
-
-
