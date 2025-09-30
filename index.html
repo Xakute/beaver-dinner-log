@@ -60,6 +60,19 @@
             from { transform: translateY(-30px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
         }
+        /* Style for the date input placeholder */
+        input[type="date"]::before {
+            content: attr(placeholder);
+            position: absolute;
+            color: #9ca3af; /* Corresponds to Tailwind's slate-400 */
+        }
+        .dark input[type="date"]::before {
+             color: #64748b; /* Corresponds to Tailwind's slate-500 */
+        }
+        input[type="date"]:focus::before,
+        input[type="date"]:valid::before {
+            display: none;
+        }
     </style>
 </head>
 <body class="bg-slate-100 dark:bg-slate-900 min-h-screen flex items-center justify-center p-4 transition-colors duration-300">
@@ -90,7 +103,7 @@
             <div class="p-4 bg-slate-100 dark:bg-slate-900/50 rounded-xl space-y-3">
                 <label class="block text-md font-semibold text-slate-700 dark:text-slate-200 text-center">Step 1: What was the meal?</label>
                 <input id="mealInput" type="text" placeholder="e.g., Spaghetti and Meatballs" class="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
-                <input id="dateInput" type="date" class="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
+                <input id="dateInput" type="date" class="relative w-full p-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
             </div>
 
             <!-- Step 2: Who Ate? -->
@@ -166,7 +179,7 @@
         </div>
     </div>
     
-    <!-- NEW: Delete Confirmation Modal -->
+    <!-- Delete Confirmation Modal -->
     <div id="deleteConfirmModal" class="modal">
         <div class="modal-content bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-sm p-6 text-center">
             <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-100">Are you sure?</h3>
@@ -258,7 +271,7 @@
             let selectedTags = [];
             let editingDocId = null;
             let fileToUpload = null;
-            let docIdToDelete = null; // To store the ID of the doc to be deleted
+            let docIdToDelete = null; 
 
             // --- Main Functions ---
 
@@ -365,6 +378,8 @@
                 elements.imagePreview.src = 'https://placehold.co/100x100/e2e8f0/9ca3af?text=Preview';
                 elements.uploadStatus.textContent = '';
                 elements.mealInput.focus();
+                 // Reset date placeholder
+                elements.dateInput.setAttribute('placeholder', 'Select a date...');
             }
 
             async function uploadImage(file) {
@@ -417,7 +432,6 @@
                 }
             }
             
-            // --- NEW: Functions to handle delete confirmation ---
             function openDeleteModal(docId) {
                 const entry = dinners.find(d => d.id === docId);
                 if (!entry) return;
@@ -458,6 +472,7 @@
                 resetForm();
                 elements.mealInput.value = entry.meal;
                 elements.dateInput.value = new Date(entry.date).toISOString().split('T')[0];
+                elements.dateInput.removeAttribute('placeholder'); // Remove placeholder on edit
                 selectedTags = entry.tags || [];
                 editingDocId = docId;
                 elements.addButton.textContent = 'Update This Dinner';
@@ -521,7 +536,7 @@
                 const deleteBtn = e.target.closest('.delete-btn');
                 const editBtn = e.target.closest('.edit-btn');
                 const entryElement = e.target.closest('.entry-click');
-                if (deleteBtn) openDeleteModal(deleteBtn.dataset.id); // MODIFIED
+                if (deleteBtn) openDeleteModal(deleteBtn.dataset.id);
                 else if (editBtn) editDinner(editBtn.dataset.id);
                 else if (entryElement) showDinnerModal(entryElement.dataset.id);
             });
@@ -529,10 +544,19 @@
             elements.closeModalBtn.addEventListener('click', () => elements.dinnerModal.style.display = 'none');
             window.addEventListener('click', (e) => { if (e.target === elements.dinnerModal) elements.dinnerModal.style.display = 'none'; });
             
-            // --- NEW: Delete Modal Listeners ---
             elements.cancelDeleteBtn.addEventListener('click', closeDeleteModal);
             elements.confirmDeleteBtn.addEventListener('click', confirmDelete);
             window.addEventListener('click', (e) => { if (e.target === elements.deleteConfirmModal) closeDeleteModal(); });
+            
+            // --- NEW: Logic for date input placeholder ---
+            elements.dateInput.setAttribute('placeholder', 'Select a date...');
+            elements.dateInput.addEventListener('change', (e) => {
+                if (e.target.value) {
+                    e.target.removeAttribute('placeholder');
+                } else {
+                    e.target.setAttribute('placeholder', 'Select a date...');
+                }
+            });
 
 
             // --- Firebase Authentication and Data Loading ---
