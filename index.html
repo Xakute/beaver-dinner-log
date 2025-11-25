@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en" class="dark"> <!-- Default to dark mode, can be controlled by OS -->
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
     <!-- PWA Theme Color -->
     <meta name="theme-color" content="#1e293b" media="(prefers-color-scheme: dark)"/>
@@ -19,11 +19,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        // Tailwind dark mode configuration
-        tailwind.config = {
-          darkMode: 'class', // or 'media'
-        }
-        // Honor the OS-level dark mode setting
+        tailwind.config = { darkMode: 'class' }
         if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
           document.documentElement.classList.add('dark')
         } else {
@@ -31,51 +27,26 @@
         }
     </script>
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
+        body { font-family: 'Inter', sans-serif; }
         .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.8);
-            backdrop-filter: blur(5px);
-            justify-content: center;
-            align-items: center;
-            animation: fadeIn 0.3s ease-out;
+            display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%;
+            overflow: auto; background-color: rgba(0,0,0,0.8); backdrop-filter: blur(5px);
+            justify-content: center; align-items: center; animation: fadeIn 0.3s ease-out;
         }
-        .modal-content {
-            animation: slideIn 0.3s ease-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        @keyframes slideIn {
-            from { transform: translateY(-30px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        /* Style for the date input placeholder */
-        input[type="date"]::before {
-            content: attr(placeholder);
-            position: absolute;
-            color: #9ca3af; /* Corresponds to Tailwind's slate-400 */
-        }
-        .dark input[type="date"]::before {
-             color: #94a3b8; /* Corresponds to Tailwind's slate-400 */
-        }
-        input[type="date"]:focus::before,
-        input[type="date"]:valid::before {
-            display: none;
-        }
+        .modal-content { animation: slideIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideIn { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        /* Date Placeholder Logic */
+        input[type="date"]::before { content: attr(placeholder); position: absolute; color: #9ca3af; }
+        .dark input[type="date"]::before { color: #94a3b8; }
+        input[type="date"]:focus::before, input[type="date"]:valid::before { display: none; }
+        
+        /* Hide scrollbar for clean UI */
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
     </style>
 </head>
-<body class="bg-slate-100 dark:bg-slate-900 min-h-screen flex items-center justify-center p-4 transition-colors duration-300">
+<body class="bg-slate-100 dark:bg-slate-900 min-h-screen text-slate-800 dark:text-slate-100 pb-24">
 
     <!-- Loading Overlay -->
     <div id="loadingOverlay" class="fixed inset-0 bg-white dark:bg-slate-900 bg-opacity-75 dark:bg-opacity-75 z-50 flex items-center justify-center">
@@ -84,52 +55,49 @@
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            <p class="text-slate-600 dark:text-slate-400 mt-3 font-semibold">Connecting to the Dinner Log...</p>
+            <p class="text-slate-600 dark:text-slate-400 mt-3 font-semibold">Loading...</p>
         </div>
     </div>
 
-    <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-xl w-full max-w-2xl p-6 md:p-8 space-y-6">
-        <div class="text-center">
-            <h1 class="text-3xl md:text-4xl font-bold text-slate-800 dark:text-slate-100">Family Dinner Log</h1>
-            <p class="text-slate-500 dark:text-slate-400 mt-1">Keep track of your delicious meals together.</p>
+    <div class="max-w-2xl mx-auto p-4 md:p-6">
+        <!-- Header -->
+        <div class="text-center mb-6">
+            <h1 class="text-3xl font-bold">Dinner Log</h1>
+            <p id="userIdDisplay" class="text-xs text-slate-400 dark:text-slate-500 mt-1 break-all">Connecting...</p>
         </div>
 
-        <!-- User Info -->
-        <p id="userIdDisplay" class="text-xs text-center text-slate-400 dark:text-slate-500 break-all p-2 bg-slate-50 dark:bg-slate-900 rounded-md"></p>
-
-        <!-- NEW: Redesigned Step-by-Step Input Form -->
-        <div id="inputForm" class="space-y-5">
-            
-            <!-- Step 1: The Date (Moved to top) -->
-            <div class="p-4 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl shadow-sm">
-                <label class="block text-md font-semibold text-slate-700 dark:text-slate-200 text-center mb-3">Step 1: When was this?</label>
-                <input id="dateInput" type="date" class="relative w-full p-3 rounded-xl border border-slate-300 dark:border-slate-500 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
+        <!-- VIEW 1: LOG DINNER -->
+        <div id="logView" class="space-y-5">
+            <!-- Step 1: Date -->
+            <div class="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
+                <label class="block text-md font-semibold mb-3 text-center text-slate-600 dark:text-slate-300">Step 1: When?</label>
+                <input id="dateInput" type="date" class="relative w-full p-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 transition duration-200">
             </div>
 
-            <!-- Step 2: The Meal -->
-            <div class="p-4 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl shadow-sm">
-                <label class="block text-md font-semibold text-slate-700 dark:text-slate-200 text-center mb-3">Step 2: What was the meal?</label>
-                <input id="mealInput" type="text" placeholder="e.g., Spaghetti and Meatballs" class="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-500 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
+            <!-- Step 2: Meal -->
+            <div class="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
+                <label class="block text-md font-semibold mb-3 text-center text-slate-600 dark:text-slate-300">Step 2: What?</label>
+                <input id="mealInput" type="text" placeholder="e.g., Spaghetti and Meatballs" class="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-blue-500 transition duration-200">
             </div>
 
-            <!-- Step 3: Who Ate? -->
-            <div class="p-4 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl shadow-sm">
-                <label class="block text-md font-semibold text-slate-700 dark:text-slate-200 mb-3 text-center">Step 3: Who ate this meal?</label>
+            <!-- Step 3: Who Ate -->
+            <div class="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
+                <label class="block text-md font-semibold mb-3 text-center text-slate-600 dark:text-slate-300">Step 3: Who?</label>
                 <div class="flex justify-center flex-wrap gap-3">
-                    <button class="tag-btn font-semibold py-2 px-5 rounded-full transition-all duration-200" data-tag="Chad" data-unselected-classes="bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200 border border-blue-200 dark:border-blue-800" data-selected-classes="bg-blue-600 text-white dark:bg-blue-500 ring-2 ring-blue-300 dark:ring-blue-400 ring-offset-2 ring-offset-white dark:ring-offset-slate-800">Chad</button>
-                    <button class="tag-btn font-semibold py-2 px-5 rounded-full transition-all duration-200" data-tag="Mom" data-unselected-classes="bg-pink-100 text-pink-800 dark:bg-pink-900/50 dark:text-pink-200 border border-pink-200 dark:border-pink-800" data-selected-classes="bg-pink-600 text-white dark:bg-pink-500 ring-2 ring-pink-300 dark:ring-pink-400 ring-offset-2 ring-offset-white dark:ring-offset-slate-800">Mom</button>
-                    <button class="tag-btn font-semibold py-2 px-5 rounded-full transition-all duration-200" data-tag="Dad" data-unselected-classes="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200 border border-green-200 dark:border-green-800" data-selected-classes="bg-green-600 text-white dark:bg-green-500 ring-2 ring-green-300 dark:ring-green-400 ring-offset-2 ring-offset-white dark:ring-offset-slate-800">Dad</button>
+                    <button class="tag-btn font-semibold py-2 px-5 rounded-full transition-all duration-200" data-tag="Chad" data-unselected-classes="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200 border border-blue-200 dark:border-blue-800" data-selected-classes="bg-blue-600 text-white dark:bg-blue-500 ring-2 ring-blue-300 dark:ring-blue-400 ring-offset-2 ring-offset-white dark:ring-offset-slate-800">Chad</button>
+                    <button class="tag-btn font-semibold py-2 px-5 rounded-full transition-all duration-200" data-tag="Mom" data-unselected-classes="bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-200 border border-pink-200 dark:border-pink-800" data-selected-classes="bg-pink-600 text-white dark:bg-pink-500 ring-2 ring-pink-300 dark:ring-pink-400 ring-offset-2 ring-offset-white dark:ring-offset-slate-800">Mom</button>
+                    <button class="tag-btn font-semibold py-2 px-5 rounded-full transition-all duration-200" data-tag="Dad" data-unselected-classes="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200 border border-green-200 dark:border-green-800" data-selected-classes="bg-green-600 text-white dark:bg-green-500 ring-2 ring-green-300 dark:ring-green-400 ring-offset-2 ring-offset-white dark:ring-offset-slate-800">Dad</button>
                 </div>
             </div>
             
-            <!-- Step 4: The Photo -->
-            <div class="p-4 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl shadow-sm">
-                <label class="block text-md font-semibold text-slate-700 dark:text-slate-200 mb-3 text-center">Step 4: Add a Photo (Optional)</label>
+            <!-- Step 4: Photo -->
+            <div class="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
+                <label class="block text-md font-semibold mb-3 text-center text-slate-600 dark:text-slate-300">Step 4: Photo (Optional)</label>
                 <div class="flex items-center gap-4">
                     <img id="imagePreview" src="https://placehold.co/100x100/e2e8f0/9ca3af?text=Preview" class="w-20 h-20 rounded-lg object-cover flex-shrink-0 bg-slate-200 dark:bg-slate-600 border border-slate-300 dark:border-slate-500">
                     <div class="w-full">
                         <input type="file" id="photoUpload" accept="image/*" class="hidden">
-                         <button id="uploadTriggerButton" type="button" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-500 text-slate-700 dark:text-slate-200 font-semibold py-2 px-4 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-600 transition duration-200">
+                         <button id="uploadTriggerButton" type="button" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 font-semibold py-2 px-4 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-600 transition duration-200">
                             Choose Photo
                         </button>
                         <p id="uploadStatus" class="text-xs text-center text-slate-500 dark:text-slate-400 mt-2 truncate"></p>
@@ -138,93 +106,84 @@
             </div>
             
             <!-- Log Button -->
-            <button id="addButton" class="w-full bg-blue-600 text-white font-bold py-4 px-6 rounded-xl shadow-md hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-lg focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800 mt-4">
+            <button id="addButton" class="w-full bg-blue-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:bg-blue-700 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-lg mt-4">
                 Log This Dinner
             </button>
         </div>
-        
-        <hr class="border-slate-200 dark:border-slate-700"/>
-        
-        <!-- Search and Toggle Section -->
-        <div class="space-y-4">
-            <input id="searchInput" type="text" placeholder="Search meals or people..." class="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
-            <div class="flex justify-center">
-                <button id="toggleButton" class="bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold py-2 px-4 rounded-full shadow-sm hover:bg-slate-300 dark:hover:bg-slate-600 transition duration-200">
-                    Hide History
-                </button>
+
+        <!-- VIEW 2: HISTORY -->
+        <div id="historyView" class="hidden space-y-4">
+            <!-- Search Bar -->
+            <div class="sticky top-0 z-10 bg-slate-100 dark:bg-slate-900 pb-2 pt-1">
+                <input id="searchInput" type="text" placeholder="Search history..." class="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-blue-500 shadow-sm transition duration-200">
             </div>
-        </div>
 
-        <!-- Message Box -->
-        <div id="messageBox" class="p-3 rounded-xl hidden"></div>
-
-        <!-- Dinner List -->
-        <div id="dinnerList" class="space-y-4">
-            <!-- Dinner entries will be dynamically inserted here -->
+            <!-- Dinner List -->
+            <div id="dinnerList" class="space-y-4 pb-4">
+                <!-- Entries inserted here -->
+            </div>
         </div>
     </div>
 
-    <!-- Main Modal for showing dinner details and photo -->
+    <!-- BOTTOM NAVIGATION BAR -->
+    <div class="fixed bottom-0 left-0 w-full bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex justify-around items-center py-3 px-2 z-40 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+        <button id="navLogBtn" class="flex flex-col items-center justify-center w-1/2 text-blue-600 dark:text-blue-400 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            <span class="text-xs font-semibold">Log Dinner</span>
+        </button>
+        <button id="navHistoryBtn" class="flex flex-col items-center justify-center w-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span class="text-xs font-semibold">History</span>
+        </button>
+    </div>
+
+    <!-- Modals (Details & Delete) -->
     <div id="dinnerModal" class="modal">
         <div class="modal-content bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-lg">
             <div class="flex justify-end mb-2">
                 <button id="closeModalBtn" class="text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
             </div>
             <div id="modalContent" class="space-y-4">
                 <img id="modalImage" class="w-full max-h-[60vh] object-contain rounded-lg shadow-md" src="" alt="Dinner Photo" onerror="this.onerror=null;this.src='https://placehold.co/600x400/f87171/ffffff?text=Image+Not+Found';">
-                <div class="space-y-2">
+                <div class="space-y-2 text-center">
                     <p id="modalMeal" class="text-3xl font-bold text-slate-800 dark:text-slate-100"></p>
                     <p id="modalDate" class="text-sm text-slate-500 dark:text-slate-400"></p>
-                    <div id="modalTags" class="flex flex-wrap gap-2"></div>
+                    <div id="modalTags" class="flex flex-wrap gap-2 justify-center"></div>
                 </div>
             </div>
         </div>
     </div>
     
-    <!-- Delete Confirmation Modal -->
     <div id="deleteConfirmModal" class="modal">
         <div class="modal-content bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-sm p-6 text-center">
             <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-100">Are you sure?</h3>
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">
-                You are about to permanently delete the entry for <strong id="deleteMealName" class="font-bold"></strong>. This action cannot be undone.
-            </p>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">Delete <strong id="deleteMealName" class="font-bold"></strong>? This cannot be undone.</p>
             <div class="mt-6 flex justify-center gap-4">
-                <button id="cancelDeleteBtn" class="px-6 py-2 rounded-lg bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-200 font-semibold hover:bg-slate-300 dark:hover:bg-slate-500 transition-colors">
-                    Cancel
-                </button>
-                <button id="confirmDeleteBtn" class="px-6 py-2 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors">
-                    Yes, Delete
-                </button>
+                <button id="cancelDeleteBtn" class="px-6 py-2 rounded-lg bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-200 font-semibold hover:bg-slate-300 dark:hover:bg-slate-500 transition-colors">Cancel</button>
+                <button id="confirmDeleteBtn" class="px-6 py-2 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors">Delete</button>
             </div>
         </div>
     </div>
 
-
     <script type="module">
-        // --- PWA SERVICE WORKER ---
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js').then(function(registration) {
-                console.log('Service Worker registered with scope:', registration.scope);
-            }).catch(function(error) {
-                console.log('Service Worker registration failed:', error);
-            });
+            navigator.serviceWorker.register('sw.js').catch(err => console.log('Service Worker failed', err));
         }
 
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, setDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- Cloudinary Configuration ---
         const cloudinaryCloudName = "dlchf76q4";
         const cloudinaryUploadPreset = "family-dinner-log";
         const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudinaryCloudName}/image/upload`;
 
-        // --- Firebase Configuration ---
-        // These placeholders will be replaced by GitHub Actions
         const firebaseConfig = {
             apiKey: "__FIREBASE_API_KEY__",
             authDomain: "__FIREBASE_AUTH_DOMAIN__",
@@ -235,377 +194,308 @@
         };
 
         try {
-            // --- Initialize Firebase ---
-            setLogLevel('debug');
             const app = initializeApp(firebaseConfig);
             const db = getFirestore(app);
             const auth = getAuth(app);
             const dbCollectionPath = `dinners/all/entries`;
 
-            // --- DOM Elements ---
-            const elements = {
-                loadingOverlay: document.getElementById('loadingOverlay'),
+            const els = {
+                loading: document.getElementById('loadingOverlay'),
+                // Views & Nav
+                logView: document.getElementById('logView'),
+                historyView: document.getElementById('historyView'),
+                navLogBtn: document.getElementById('navLogBtn'),
+                navHistoryBtn: document.getElementById('navHistoryBtn'),
+                // Inputs
                 mealInput: document.getElementById('mealInput'),
                 dateInput: document.getElementById('dateInput'),
                 addButton: document.getElementById('addButton'),
                 searchInput: document.getElementById('searchInput'),
-                toggleButton: document.getElementById('toggleButton'),
                 dinnerList: document.getElementById('dinnerList'),
                 messageBox: document.getElementById('messageBox'),
                 userIdDisplay: document.getElementById('userIdDisplay'),
                 tagButtons: document.querySelectorAll('.tag-btn'),
+                // Modals
                 dinnerModal: document.getElementById('dinnerModal'),
                 closeModalBtn: document.getElementById('closeModalBtn'),
                 modalImage: document.getElementById('modalImage'),
                 modalMeal: document.getElementById('modalMeal'),
                 modalDate: document.getElementById('modalDate'),
                 modalTags: document.getElementById('modalTags'),
+                deleteModal: document.getElementById('deleteConfirmModal'),
+                cancelDelete: document.getElementById('cancelDeleteBtn'),
+                confirmDelete: document.getElementById('confirmDeleteBtn'),
+                deleteMealName: document.getElementById('deleteMealName'),
+                // Photo
                 photoUpload: document.getElementById('photoUpload'),
-                uploadTriggerButton: document.getElementById('uploadTriggerButton'),
+                uploadBtn: document.getElementById('uploadTriggerButton'),
                 imagePreview: document.getElementById('imagePreview'),
                 uploadStatus: document.getElementById('uploadStatus'),
-                deleteConfirmModal: document.getElementById('deleteConfirmModal'),
-                cancelDeleteBtn: document.getElementById('cancelDeleteBtn'),
-                confirmDeleteBtn: document.getElementById('confirmDeleteBtn'),
-                deleteMealName: document.getElementById('deleteMealName'),
             };
 
-            // --- State variables ---
             let dinners = [];
             let isAuthenticated = false;
             let userId = null;
             let selectedTags = [];
             let editingDocId = null;
             let fileToUpload = null;
-            let docIdToDelete = null; 
+            let docIdToDelete = null;
 
-            // --- Main Functions ---
+            // --- NAVIGATION LOGIC ---
+            function switchTab(tab) {
+                if (tab === 'log') {
+                    els.logView.classList.remove('hidden');
+                    els.historyView.classList.add('hidden');
+                    
+                    els.navLogBtn.classList.add('text-blue-600', 'dark:text-blue-400');
+                    els.navLogBtn.classList.remove('text-slate-400', 'dark:text-slate-500');
+                    
+                    els.navHistoryBtn.classList.remove('text-blue-600', 'dark:text-blue-400');
+                    els.navHistoryBtn.classList.add('text-slate-400', 'dark:text-slate-500');
+                } else {
+                    els.logView.classList.add('hidden');
+                    els.historyView.classList.remove('hidden');
+                    
+                    els.navHistoryBtn.classList.add('text-blue-600', 'dark:text-blue-400');
+                    els.navHistoryBtn.classList.remove('text-slate-400', 'dark:text-slate-500');
+                    
+                    els.navLogBtn.classList.remove('text-blue-600', 'dark:text-blue-400');
+                    els.navLogBtn.classList.add('text-slate-400', 'dark:text-slate-500');
+                }
+            }
 
-            function showMessage(message, type = 'error') {
-                elements.messageBox.textContent = message;
-                elements.messageBox.className = `p-3 rounded-xl transition-all duration-300 text-center font-semibold ${type === 'error' ? 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-200' : 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-200'}`;
-                elements.messageBox.style.display = 'block';
-                setTimeout(() => {
-                    elements.messageBox.style.display = 'none';
-                }, 4000);
+            els.navLogBtn.addEventListener('click', () => switchTab('log'));
+            els.navHistoryBtn.addEventListener('click', () => switchTab('history'));
+
+            // --- CORE FUNCTIONS ---
+            function showMessage(msg, type='error') { /* Same as before, simplified for brevity in logic */ alert(msg); } // Replaced with alert for simplicity or use modal? Let's keep alert for errors for now to save space, or use a toast if preferred. Actually, let's stick to the toast logic but minimal.
+            
+            // ... Re-implementing the Toast Logic properly ...
+            const msgBox = document.createElement('div');
+            msgBox.className = "fixed top-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-full shadow-lg z-50 hidden transition-all duration-300 font-semibold text-sm";
+            document.body.appendChild(msgBox);
+
+            function toast(msg, type='success') {
+                msgBox.textContent = msg;
+                msgBox.className = `fixed top-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-full shadow-lg z-50 transition-all duration-300 font-semibold text-sm ${type === 'error' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}`;
+                msgBox.style.display = 'block';
+                setTimeout(() => { msgBox.style.display = 'none'; }, 3000);
             }
 
             function renderDinners(entries) {
-                elements.dinnerList.innerHTML = '';
+                els.dinnerList.innerHTML = '';
                 if (entries.length === 0) {
-                    elements.dinnerList.innerHTML = '<p class="text-center text-slate-500 dark:text-slate-400 py-4">No dinners logged yet. Let\'s add one!</p>';
+                    els.dinnerList.innerHTML = '<p class="text-center text-slate-500 py-10">No history yet.</p>';
                     return;
                 }
-                const groupedByDate = entries.reduce((acc, entry) => {
-                    const date = new Date(entry.date).toLocaleDateString('en-US', { timeZone: 'UTC' });
-                    if (!acc[date]) acc[date] = [];
-                    acc[date].push(entry);
-                    return acc;
+                const grouped = entries.reduce((acc, entry) => {
+                    const d = new Date(entry.date).toLocaleDateString('en-US', { timeZone: 'UTC' });
+                    if (!acc[d]) acc[d] = []; acc[d].push(entry); return acc;
                 }, {});
-                const sortedDates = Object.keys(groupedByDate).sort((a, b) => new Date(b) - new Date(a));
-                sortedDates.forEach(dateStr => {
-                    const dateEntries = groupedByDate[dateStr];
-                    const dateCard = document.createElement('div');
-                    dateCard.className = 'p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 space-y-3';
-                    const dateHeader = document.createElement('p');
-                    dateHeader.className = "text-md font-bold text-slate-600 dark:text-slate-300";
-                    dateHeader.textContent = new Date(dateStr).toLocaleDateString('en-US', {
-                        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC'
-                    });
-                    dateCard.appendChild(dateHeader);
-                    dateEntries.forEach(entry => {
-                        const entryCard = document.createElement('div');
-                        entryCard.className = 'flex justify-between items-center bg-white dark:bg-slate-700 p-3 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200';
-                        const tagsHtml = entry.tags?.map(tag => {
-                            let colorClass = '';
-                            if (tag === 'Chad') colorClass = 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200';
-                            if (tag === 'Mom') colorClass = 'bg-pink-100 text-pink-800 dark:bg-pink-900/50 dark:text-pink-200';
-                            if (tag === 'Dad') colorClass = 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200';
-                            return `<span class="text-xs ${colorClass} px-2 py-1 rounded-full font-medium">${tag}</span>`;
-                        }).join('') || '';
-                        
-                        const imageThumbnailHtml = entry.imageUrl 
-                            ? `<img src="${entry.imageUrl}" onerror="this.style.display='none'" class="w-14 h-14 rounded-lg object-cover flex-shrink-0 cursor-pointer entry-click" data-id="${entry.id}">` 
-                            : '';
+                
+                Object.keys(grouped).sort((a, b) => new Date(b) - new Date(a)).forEach(dateStr => {
+                    const card = document.createElement('div');
+                    card.className = 'p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 space-y-2';
+                    const header = document.createElement('p');
+                    header.className = "text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide";
+                    header.textContent = new Date(dateStr).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                    card.appendChild(header);
 
-                        entryCard.innerHTML = `
-                            <div class="flex items-center gap-4 flex-grow">
-                                ${imageThumbnailHtml}
-                                <div class="cursor-pointer entry-click flex-grow" data-id="${entry.id}">
-                                    <p class="text-lg font-medium text-slate-800 dark:text-slate-100">${entry.meal}</p>
-                                    <div class="flex flex-wrap gap-1 mt-1">${tagsHtml}</div>
+                    grouped[dateStr].forEach(entry => {
+                        const item = document.createElement('div');
+                        item.className = 'flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-700 last:border-0';
+                        
+                        const thumb = entry.imageUrl ? `<img src="${entry.imageUrl}" class="w-12 h-12 rounded-lg object-cover mr-3 bg-slate-100 entry-click cursor-pointer" data-id="${entry.id}">` : '';
+                        
+                        let tags = (entry.tags || []).map(t => {
+                            let c = 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300';
+                            if(t==='Chad') c='bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300';
+                            if(t==='Mom') c='bg-pink-100 text-pink-700 dark:bg-pink-900/40 dark:text-pink-300';
+                            if(t==='Dad') c='bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300';
+                            return `<span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${c}">${t}</span>`;
+                        }).join(' ');
+
+                        item.innerHTML = `
+                            <div class="flex items-center flex-grow min-w-0">
+                                ${thumb}
+                                <div class="entry-click cursor-pointer min-w-0" data-id="${entry.id}">
+                                    <p class="text-base font-semibold text-slate-800 dark:text-slate-100 truncate">${entry.meal}</p>
+                                    <div class="flex gap-1 mt-0.5">${tags}</div>
                                 </div>
                             </div>
-                            <div class="flex space-x-2">
-                                <button class="edit-btn text-slate-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-200 p-1" data-id="${entry.id}" title="Edit"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg></button>
-                                <button class="delete-btn text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors duration-200 p-1" data-id="${entry.id}" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
+                            <div class="flex items-center pl-2">
+                                <button class="edit-btn p-2 text-slate-400 hover:text-blue-500 transition-colors" data-id="${entry.id}"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg></button>
+                                <button class="delete-btn p-2 text-slate-400 hover:text-red-500 transition-colors" data-id="${entry.id}"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
                             </div>
                         `;
-                        dateCard.appendChild(entryCard);
+                        card.appendChild(item);
                     });
-                    elements.dinnerList.appendChild(dateCard);
+                    els.dinnerList.appendChild(card);
                 });
             }
 
-            function filterDinners() {
-                const query = elements.searchInput.value.toLowerCase();
-                const filtered = dinners.filter(entry =>
-                    entry.meal.toLowerCase().includes(query) ||
-                    (entry.tags && entry.tags.some(tag => tag.toLowerCase().includes(query)))
-                );
-                renderDinners(filtered);
-                if (elements.dinnerList.classList.contains('hidden')) {
-                    toggleHistory();
-                }
-            }
-            
             function applyTagStyles(btn, isSelected) {
-                const unselectedClasses = btn.dataset.unselectedClasses.split(' ');
-                const selectedClasses = btn.dataset.selectedClasses.split(' ');
-
-                if (isSelected) {
-                    btn.classList.remove(...unselectedClasses);
-                    btn.classList.add(...selectedClasses);
-                } else {
-                    btn.classList.remove(...selectedClasses);
-                    btn.classList.add(...unselectedClasses);
-                }
+                const un = btn.dataset.unselectedClasses.split(' ');
+                const sel = btn.dataset.selectedClasses.split(' ');
+                if (isSelected) { btn.classList.remove(...un); btn.classList.add(...sel); }
+                else { btn.classList.remove(...sel); btn.classList.add(...un); }
             }
 
             function resetForm() {
-                elements.mealInput.value = '';
-                elements.dateInput.value = '';
+                els.mealInput.value = '';
+                els.dateInput.value = '';
                 selectedTags = [];
                 editingDocId = null;
-                elements.addButton.textContent = 'Log This Dinner';
-                elements.tagButtons.forEach(btn => applyTagStyles(btn, false));
+                els.addButton.textContent = 'Log This Dinner';
+                els.tagButtons.forEach(btn => applyTagStyles(btn, false));
                 fileToUpload = null;
-                elements.photoUpload.value = '';
-                elements.imagePreview.src = 'https://placehold.co/100x100/e2e8f0/9ca3af?text=Preview';
-                elements.uploadStatus.textContent = '';
-                
-                // --- REMOVED FOCUS CALL ---
-                // elements.mealInput.focus(); <--- This line is gone
-                
-                 // Reset date placeholder
-                elements.dateInput.setAttribute('placeholder', 'Select a date...');
+                els.photoUpload.value = '';
+                els.imagePreview.src = 'https://placehold.co/100x100/e2e8f0/9ca3af?text=Preview';
+                els.uploadStatus.textContent = '';
+                els.dateInput.setAttribute('placeholder', 'Select a date...');
+                // Switch back to log view on reset if needed, but better to stay where user is.
             }
 
-            async function uploadImage(file) {
-                const formData = new FormData();
-                formData.append('file', file);
-                formData.append('upload_preset', cloudinaryUploadPreset);
-                elements.uploadStatus.textContent = 'Uploading...';
-                elements.addButton.disabled = true;
-                try {
-                    const response = await fetch(cloudinaryUrl, { method: 'POST', body: formData });
-                    if (!response.ok) throw new Error('Upload failed');
-                    const data = await response.json();
-                    elements.uploadStatus.textContent = 'Success!';
-                    return data.secure_url;
-                } catch (error) {
-                    console.error("Cloudinary Upload Error:", error);
-                    showMessage('Photo upload failed. Please try again.');
-                    elements.uploadStatus.textContent = 'Upload failed.';
-                    return null;
-                } finally {
-                    elements.addButton.disabled = false;
-                }
-            }
-
-            async function handleAddOrUpdateDinner() {
-                const meal = elements.mealInput.value.trim();
-                if (!isAuthenticated) return showMessage('App is not connected.');
-                if (!meal) return showMessage('Please enter a meal to add.');
-                let imageUrl = editingDocId ? dinners.find(d => d.id === editingDocId)?.imageUrl : null;
+            // --- ACTIONS ---
+            async function handleAdd() {
+                const meal = els.mealInput.value.trim();
+                if (!isAuthenticated) return toast('App not connected.', 'error');
+                if (!meal) return toast('Please enter a meal.', 'error');
+                
+                let img = editingDocId ? dinners.find(d => d.id === editingDocId)?.imageUrl : null;
                 if (fileToUpload) {
-                    imageUrl = await uploadImage(fileToUpload);
-                    if (!imageUrl) return;
-                }
-                const dateStr = elements.dateInput.value;
-                const date = dateStr ? new Date(`${dateStr}T00:00:00Z`) : new Date();
-                date.setUTCHours(0, 0, 0, 0);
-                const newEntry = { meal, date: date.toISOString(), tags: selectedTags, imageUrl, authorId: userId };
-                try {
-                    if (editingDocId) {
-                        await setDoc(doc(db, dbCollectionPath, editingDocId), newEntry);
-                        showMessage('Dinner updated!', 'success');
-                    } else {
-                        await addDoc(collection(db, dbCollectionPath), newEntry);
-                        showMessage('Dinner added!', 'success');
+                    els.uploadStatus.textContent = 'Uploading...';
+                    els.addButton.disabled = true;
+                    try {
+                        const fd = new FormData(); fd.append('file', fileToUpload); fd.append('upload_preset', cloudinaryUploadPreset);
+                        const res = await fetch(cloudinaryUrl, { method: 'POST', body: fd });
+                        if(!res.ok) throw new Error();
+                        const data = await res.json();
+                        img = data.secure_url;
+                    } catch(e) {
+                        toast('Photo upload failed', 'error');
+                        els.addButton.disabled = false;
+                        return; 
                     }
-                    resetForm();
-                } catch (error) {
-                    console.error("Error saving to Firestore: ", error);
-                    showMessage('Error saving dinner.');
                 }
-            }
-            
-            function openDeleteModal(docId) {
-                const entry = dinners.find(d => d.id === docId);
-                if (!entry) return;
-                docIdToDelete = docId;
-                elements.deleteMealName.textContent = `"${entry.meal}"`;
-                elements.deleteConfirmModal.style.display = 'flex';
-            }
 
-            function closeDeleteModal() {
-                docIdToDelete = null;
-                elements.deleteConfirmModal.style.display = 'none';
-            }
-
-            async function confirmDelete() {
-                if (!docIdToDelete) return;
-                if (!isAuthenticated) return showMessage('Not connected.');
+                const dStr = els.dateInput.value;
+                const date = dStr ? new Date(`${dStr}T00:00:00Z`) : new Date();
+                date.setUTCHours(0,0,0,0);
+                
+                const entry = { meal, date: date.toISOString(), tags: selectedTags, imageUrl: img, authorId: userId };
                 
                 try {
-                    await deleteDoc(doc(db, dbCollectionPath, docIdToDelete));
-                    showMessage('Dinner deleted.', 'success');
-                } catch (error) {
-                    console.error("Error deleting document: ", error);
-                    showMessage('Error deleting dinner.');
-                } finally {
-                    closeDeleteModal();
-                }
+                    if(editingDocId) await setDoc(doc(db, dbCollectionPath, editingDocId), entry);
+                    else await addDoc(collection(db, dbCollectionPath), entry);
+                    
+                    toast(editingDocId ? 'Updated!' : 'Saved!');
+                    resetForm();
+                    els.addButton.disabled = false;
+                    els.uploadStatus.textContent = '';
+                    // Optional: Switch to history view to see it? 
+                    // switchTab('history'); 
+                } catch(e) { console.error(e); toast('Error saving.', 'error'); els.addButton.disabled = false; }
             }
 
-
-            function toggleHistory() {
-                elements.dinnerList.classList.toggle('hidden');
-                elements.toggleButton.textContent = elements.dinnerList.classList.contains('hidden') ? 'Show History' : 'Hide History';
+            function openDelete(id) {
+                const entry = dinners.find(d => d.id === id);
+                if(!entry) return;
+                docIdToDelete = id;
+                els.deleteMealName.textContent = entry.meal;
+                els.deleteModal.style.display = 'flex';
             }
 
-            function editDinner(docId) {
-                const entry = dinners.find(d => d.id === docId);
-                if (!entry) return;
+            async function doDelete() {
+                if(!docIdToDelete) return;
+                await deleteDoc(doc(db, dbCollectionPath, docIdToDelete));
+                toast('Deleted.');
+                els.deleteModal.style.display = 'none';
+            }
+
+            function openEdit(id) {
+                const entry = dinners.find(d => d.id === id);
+                if(!entry) return;
                 resetForm();
-                elements.mealInput.value = entry.meal;
-                elements.dateInput.value = new Date(entry.date).toISOString().split('T')[0];
-                elements.dateInput.removeAttribute('placeholder'); // Remove placeholder on edit
+                els.mealInput.value = entry.meal;
+                els.dateInput.value = new Date(entry.date).toISOString().split('T')[0];
+                els.dateInput.removeAttribute('placeholder');
                 selectedTags = entry.tags || [];
-                editingDocId = docId;
-                elements.addButton.textContent = 'Update This Dinner';
-                if (entry.imageUrl) {
-                    elements.imagePreview.src = entry.imageUrl;
-                    elements.uploadStatus.textContent = "Current photo";
-                }
-                elements.tagButtons.forEach(btn => {
-                    applyTagStyles(btn, selectedTags.includes(btn.dataset.tag));
-                });
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                editingDocId = id;
+                els.addButton.textContent = 'Update Entry';
+                if(entry.imageUrl) { els.imagePreview.src = entry.imageUrl; els.uploadStatus.textContent = "Current photo"; }
+                els.tagButtons.forEach(btn => applyTagStyles(btn, selectedTags.includes(btn.dataset.tag)));
+                switchTab('log'); // Switch to log view to edit
+                window.scrollTo({top:0, behavior:'smooth'});
             }
 
-            function showDinnerModal(docId) {
-                const entry = dinners.find(d => d.id === docId);
-                if (!entry) return;
-                elements.modalMeal.textContent = entry.meal;
-                elements.modalDate.textContent = new Date(entry.date).toLocaleDateString('en-US', {
-                    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC'
-                });
-                elements.modalTags.innerHTML = entry.tags?.map(tag => {
-                    let colorClass = '';
-                    if (tag === 'Chad') colorClass = 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200';
-                    if (tag === 'Mom') colorClass = 'bg-pink-100 text-pink-800 dark:bg-pink-900/50 dark:text-pink-200';
-                    if (tag === 'Dad') colorClass = 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200';
-                    return `<span class="text-xs ${colorClass} px-2 py-1 rounded-full font-medium">${tag}</span>`;
-                }).join('') || '';
-                elements.modalImage.src = entry.imageUrl || '';
-                elements.modalImage.style.display = entry.imageUrl ? 'block' : 'none';
-                elements.dinnerModal.style.display = 'flex';
-            }
-
-            // --- Event Listeners ---
-            elements.addButton.addEventListener('click', handleAddOrUpdateDinner);
-            elements.searchInput.addEventListener('input', filterDinners);
-            elements.toggleButton.addEventListener('click', toggleHistory);
-            elements.uploadTriggerButton.addEventListener('click', () => elements.photoUpload.click());
-            elements.photoUpload.addEventListener('change', (e) => {
-                if (e.target.files && e.target.files[0]) {
-                    const file = e.target.files[0];
-                    fileToUpload = file;
-                    elements.imagePreview.src = URL.createObjectURL(file);
-                    elements.uploadStatus.textContent = file.name;
+            // --- LISTENERS ---
+            els.addButton.addEventListener('click', handleAdd);
+            els.uploadBtn.addEventListener('click', () => els.photoUpload.click());
+            els.photoUpload.addEventListener('change', e => {
+                if(e.target.files[0]) {
+                    fileToUpload = e.target.files[0];
+                    els.imagePreview.src = URL.createObjectURL(fileToUpload);
+                    els.uploadStatus.textContent = "Selected";
                 }
             });
-            
-            elements.tagButtons.forEach(btn => {
-                applyTagStyles(btn, false); 
+            els.tagButtons.forEach(btn => {
+                applyTagStyles(btn, false);
                 btn.addEventListener('click', () => {
-                    const tag = btn.dataset.tag;
-                    if (selectedTags.includes(tag)) {
-                        selectedTags = selectedTags.filter(t => t !== tag);
-                    } else {
-                        selectedTags.push(tag);
-                    }
-                    applyTagStyles(btn, selectedTags.includes(tag));
+                    const t = btn.dataset.tag;
+                    if(selectedTags.includes(t)) selectedTags = selectedTags.filter(x => x !== t);
+                    else selectedTags.push(t);
+                    applyTagStyles(btn, selectedTags.includes(t));
                 });
             });
-
-            elements.dinnerList.addEventListener('click', (e) => {
-                const deleteBtn = e.target.closest('.delete-btn');
-                const editBtn = e.target.closest('.edit-btn');
-                const entryElement = e.target.closest('.entry-click');
-                if (deleteBtn) openDeleteModal(deleteBtn.dataset.id);
-                else if (editBtn) editDinner(editBtn.dataset.id);
-                else if (entryElement) showDinnerModal(entryElement.dataset.id);
-            });
-            
-            elements.closeModalBtn.addEventListener('click', () => elements.dinnerModal.style.display = 'none');
-            window.addEventListener('click', (e) => { if (e.target === elements.dinnerModal) elements.dinnerModal.style.display = 'none'; });
-            
-            elements.cancelDeleteBtn.addEventListener('click', closeDeleteModal);
-            elements.confirmDeleteBtn.addEventListener('click', confirmDelete);
-            window.addEventListener('click', (e) => { if (e.target === elements.deleteConfirmModal) closeDeleteModal(); });
-            
-            // --- NEW: Logic for date input placeholder ---
-            elements.dateInput.setAttribute('placeholder', 'Select a date...');
-            elements.dateInput.addEventListener('change', (e) => {
-                if (e.target.value) {
-                    e.target.removeAttribute('placeholder');
-                } else {
-                    e.target.setAttribute('placeholder', 'Select a date...');
+            els.dinnerList.addEventListener('click', e => {
+                const del = e.target.closest('.delete-btn');
+                const edit = e.target.closest('.edit-btn');
+                const item = e.target.closest('.entry-click');
+                if(del) openDelete(del.dataset.id);
+                else if(edit) openEdit(edit.dataset.id);
+                else if(item) {
+                    const ent = dinners.find(d => d.id === item.dataset.id);
+                    els.modalMeal.textContent = ent.meal;
+                    els.modalDate.textContent = new Date(ent.date).toLocaleDateString('en-US', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+                    els.modalTags.innerHTML = (ent.tags||[]).map(t => `<span class="text-xs bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded-full">${t}</span>`).join('');
+                    els.modalImage.src = ent.imageUrl || '';
+                    els.modalImage.style.display = ent.imageUrl ? 'block' : 'none';
+                    els.dinnerModal.style.display = 'flex';
                 }
             });
+            els.closeModalBtn.addEventListener('click', () => els.dinnerModal.style.display = 'none');
+            els.cancelDelete.addEventListener('click', () => els.deleteModal.style.display = 'none');
+            els.confirmDelete.addEventListener('click', doDelete);
+            els.searchInput.addEventListener('input', () => {
+                const q = els.searchInput.value.toLowerCase();
+                renderDinners(dinners.filter(d => d.meal.toLowerCase().includes(q) || (d.tags||[]).some(t => t.toLowerCase().includes(q))));
+            });
+            window.onclick = e => {
+                if(e.target === els.dinnerModal) els.dinnerModal.style.display = 'none';
+                if(e.target === els.deleteModal) els.deleteModal.style.display = 'none';
+            };
+            
+            // Placeholder logic
+            els.dateInput.setAttribute('placeholder', 'Select a date...');
+            els.dateInput.addEventListener('change', e => {
+               e.target.value ? e.target.removeAttribute('placeholder') : e.target.setAttribute('placeholder', 'Select a date...');
+            });
 
-
-            // --- Firebase Authentication and Data Loading ---
+            // Init
             onAuthStateChanged(auth, user => {
-                if (user) {
-                    isAuthenticated = true;
-                    userId = user.uid;
-                    elements.addButton.disabled = false;
-                    elements.loadingOverlay.style.display = 'none';
-                    elements.userIdDisplay.textContent = `Your User ID: ${user.uid}`;
-                    onSnapshot(collection(db, dbCollectionPath), (snapshot) => {
-                        dinners = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                        filterDinners();
-                    }, (error) => {
-                        console.error("Error fetching data: ", error);
-                        showMessage("Could not fetch dinner history.");
+                if(user) {
+                    isAuthenticated = true; userId = user.uid;
+                    els.loading.style.display = 'none';
+                    els.userIdDisplay.textContent = 'ID: ' + user.uid.slice(0,6)+'...';
+                    onSnapshot(collection(db, dbCollectionPath), snap => {
+                        dinners = snap.docs.map(d => ({id: d.id, ...d.data()}));
+                        renderDinners(dinners);
                     });
-                } else {
-                    isAuthenticated = false;
-                    userId = null;
-                    elements.addButton.disabled = true;
-                    elements.userIdDisplay.textContent = "Connecting...";
-                    signInAnonymously(auth).catch(error => {
-                        console.error("Anonymous sign-in failed:", error);
-                        showMessage("Could not connect to the service.");
-                        elements.loadingOverlay.style.display = 'none';
-                    });
-                }
+                } else { signInAnonymously(auth); }
             });
 
-        } catch (error) {
-            console.error("Failed to initialize the application:", error);
-            document.getElementById('loadingOverlay').style.display = 'none';
-            const body = document.querySelector('body');
-            body.innerHTML = `<div class="text-center p-8">
-                <h1 class="text-2xl font-bold text-red-600 dark:text-red-400">Application Error</h1>
-                <p class="text-slate-700 dark:text-slate-300 mt-2">Could not initialize the application. This is often due to an incorrect Firebase configuration.</p>
-                <p class="text-slate-500 dark:text-slate-400 mt-4">Please make sure you have pasted your Firebase config details correctly into the HTML file.</p>
-            </div>`;
-        }
+        } catch(e) { console.error(e); document.body.innerHTML = '<p class="p-10 text-center text-red-500">Config Error</p>'; }
     </script>
 </body>
 </html>
