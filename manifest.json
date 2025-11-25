@@ -1,16 +1,17 @@
 {
-  "name": "Dinner Log",
+  "name": "Beaver Dinner Log",
   "short_name": "DinnerLog",
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#fb923c",
+  "background_color": "#1e293b",
+  "theme_color": "#1e293b",
   "description": "A simple log for family dinners.",
   "icons": [
     {
       "src": "icon.svg",
       "sizes": "any",
-      "type": "image/svg+xml"
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     },
     {
       "src": "icon-mono.svg",
@@ -20,4 +21,3 @@
     }
   ]
 }
-
