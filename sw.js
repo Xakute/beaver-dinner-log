@@ -1,4 +1,4 @@
-const CACHE_NAME = "dinner-log-cache-v18";
+const CACHE_NAME = "dinner-log-cache-v19";
 
 const urlsToCache = [
   ".", 
