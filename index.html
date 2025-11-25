@@ -67,7 +67,7 @@
             color: #9ca3af; /* Corresponds to Tailwind's slate-400 */
         }
         .dark input[type="date"]::before {
-             color: #64748b; /* Corresponds to Tailwind's slate-500 */
+             color: #94a3b8; /* Corresponds to Tailwind's slate-400 */
         }
         input[type="date"]:focus::before,
         input[type="date"]:valid::before {
@@ -95,35 +95,41 @@
         </div>
 
         <!-- User Info -->
-        <p id="userIdDisplay" class="text-xs text-center text-slate-400 dark:text-slate-500 break-all p-2 bg-slate-50 dark:bg-slate-700/50 rounded-md"></p>
+        <p id="userIdDisplay" class="text-xs text-center text-slate-400 dark:text-slate-500 break-all p-2 bg-slate-50 dark:bg-slate-900 rounded-md"></p>
 
         <!-- NEW: Redesigned Step-by-Step Input Form -->
-        <div id="inputForm" class="space-y-4">
-            <!-- Step 1: The Meal -->
-            <div class="p-4 bg-slate-100 dark:bg-slate-900/50 rounded-xl space-y-3">
-                <label class="block text-md font-semibold text-slate-700 dark:text-slate-200 text-center">Step 1: What was the meal?</label>
-                <input id="mealInput" type="text" placeholder="e.g., Spaghetti and Meatballs" class="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
-                <input id="dateInput" type="date" class="relative w-full p-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
+        <div id="inputForm" class="space-y-5">
+            
+            <!-- Step 1: The Date (Moved to top) -->
+            <div class="p-4 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl shadow-sm">
+                <label class="block text-md font-semibold text-slate-700 dark:text-slate-200 text-center mb-3">Step 1: When was this?</label>
+                <input id="dateInput" type="date" class="relative w-full p-3 rounded-xl border border-slate-300 dark:border-slate-500 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
             </div>
 
-            <!-- Step 2: Who Ate? -->
-            <div class="p-4 bg-slate-100 dark:bg-slate-900/50 rounded-xl">
-                <label class="block text-md font-semibold text-slate-700 dark:text-slate-200 mb-3 text-center">Step 2: Who ate this meal?</label>
+            <!-- Step 2: The Meal -->
+            <div class="p-4 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl shadow-sm">
+                <label class="block text-md font-semibold text-slate-700 dark:text-slate-200 text-center mb-3">Step 2: What was the meal?</label>
+                <input id="mealInput" type="text" placeholder="e.g., Spaghetti and Meatballs" class="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-500 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
+            </div>
+
+            <!-- Step 3: Who Ate? -->
+            <div class="p-4 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl shadow-sm">
+                <label class="block text-md font-semibold text-slate-700 dark:text-slate-200 mb-3 text-center">Step 3: Who ate this meal?</label>
                 <div class="flex justify-center flex-wrap gap-3">
-                    <button class="tag-btn font-semibold py-2 px-5 rounded-full transition-all duration-200" data-tag="Chad" data-unselected-classes="bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200" data-selected-classes="bg-blue-600 text-white dark:bg-blue-500 ring-2 ring-blue-300 dark:ring-blue-400 ring-offset-2 ring-offset-white dark:ring-offset-slate-800">Chad</button>
-                    <button class="tag-btn font-semibold py-2 px-5 rounded-full transition-all duration-200" data-tag="Mom" data-unselected-classes="bg-pink-100 text-pink-800 dark:bg-pink-900/50 dark:text-pink-200" data-selected-classes="bg-pink-600 text-white dark:bg-pink-500 ring-2 ring-pink-300 dark:ring-pink-400 ring-offset-2 ring-offset-white dark:ring-offset-slate-800">Mom</button>
-                    <button class="tag-btn font-semibold py-2 px-5 rounded-full transition-all duration-200" data-tag="Dad" data-unselected-classes="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200" data-selected-classes="bg-green-600 text-white dark:bg-green-500 ring-2 ring-green-300 dark:ring-green-400 ring-offset-2 ring-offset-white dark:ring-offset-slate-800">Dad</button>
+                    <button class="tag-btn font-semibold py-2 px-5 rounded-full transition-all duration-200" data-tag="Chad" data-unselected-classes="bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200 border border-blue-200 dark:border-blue-800" data-selected-classes="bg-blue-600 text-white dark:bg-blue-500 ring-2 ring-blue-300 dark:ring-blue-400 ring-offset-2 ring-offset-white dark:ring-offset-slate-800">Chad</button>
+                    <button class="tag-btn font-semibold py-2 px-5 rounded-full transition-all duration-200" data-tag="Mom" data-unselected-classes="bg-pink-100 text-pink-800 dark:bg-pink-900/50 dark:text-pink-200 border border-pink-200 dark:border-pink-800" data-selected-classes="bg-pink-600 text-white dark:bg-pink-500 ring-2 ring-pink-300 dark:ring-pink-400 ring-offset-2 ring-offset-white dark:ring-offset-slate-800">Mom</button>
+                    <button class="tag-btn font-semibold py-2 px-5 rounded-full transition-all duration-200" data-tag="Dad" data-unselected-classes="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200 border border-green-200 dark:border-green-800" data-selected-classes="bg-green-600 text-white dark:bg-green-500 ring-2 ring-green-300 dark:ring-green-400 ring-offset-2 ring-offset-white dark:ring-offset-slate-800">Dad</button>
                 </div>
             </div>
             
-            <!-- Step 3: The Photo -->
-            <div class="p-4 bg-slate-100 dark:bg-slate-900/50 rounded-xl">
-                <label class="block text-md font-semibold text-slate-700 dark:text-slate-200 mb-3 text-center">Step 3: Add a Photo (Optional)</label>
+            <!-- Step 4: The Photo -->
+            <div class="p-4 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl shadow-sm">
+                <label class="block text-md font-semibold text-slate-700 dark:text-slate-200 mb-3 text-center">Step 4: Add a Photo (Optional)</label>
                 <div class="flex items-center gap-4">
-                    <img id="imagePreview" src="https://placehold.co/100x100/e2e8f0/9ca3af?text=Preview" class="w-20 h-20 rounded-lg object-cover flex-shrink-0 bg-slate-200 dark:bg-slate-700">
+                    <img id="imagePreview" src="https://placehold.co/100x100/e2e8f0/9ca3af?text=Preview" class="w-20 h-20 rounded-lg object-cover flex-shrink-0 bg-slate-200 dark:bg-slate-600 border border-slate-300 dark:border-slate-500">
                     <div class="w-full">
                         <input type="file" id="photoUpload" accept="image/*" class="hidden">
-                         <button id="uploadTriggerButton" type="button" class="w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 font-semibold py-2 px-4 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-600 transition duration-200">
+                         <button id="uploadTriggerButton" type="button" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-500 text-slate-700 dark:text-slate-200 font-semibold py-2 px-4 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-600 transition duration-200">
                             Choose Photo
                         </button>
                         <p id="uploadStatus" class="text-xs text-center text-slate-500 dark:text-slate-400 mt-2 truncate"></p>
@@ -131,8 +137,8 @@
                 </div>
             </div>
             
-            <!-- Step 4: Add Button -->
-            <button id="addButton" class="w-full bg-blue-600 text-white font-bold py-4 px-6 rounded-xl shadow-md hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-lg focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800">
+            <!-- Log Button -->
+            <button id="addButton" class="w-full bg-blue-600 text-white font-bold py-4 px-6 rounded-xl shadow-md hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-lg focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800 mt-4">
                 Log This Dinner
             </button>
         </div>
