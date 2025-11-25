@@ -8,7 +8,7 @@
     <meta name="theme-color" content="#1e293b" media="(prefers-color-scheme: dark)"/>
     <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)"/>
     
-    <title>Family Dinner Log</title>
+    <title>Beaver Dinner Log</title>
     
     <!-- Web App Manifest -->
     <link rel="manifest" href="manifest.json">
@@ -37,11 +37,6 @@
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideIn { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         
-        /* Date Placeholder Logic */
-        input[type="date"]::before { content: attr(placeholder); position: absolute; color: #9ca3af; }
-        .dark input[type="date"]::before { color: #94a3b8; }
-        input[type="date"]:focus::before, input[type="date"]:valid::before { display: none; }
-        
         /* Hide scrollbar for clean UI */
         ::-webkit-scrollbar { width: 0px; background: transparent; }
     </style>
@@ -62,7 +57,7 @@
     <div class="max-w-2xl mx-auto p-4 md:p-6">
         <!-- Header -->
         <div class="text-center mb-6">
-            <h1 class="text-3xl font-bold">Dinner Log</h1>
+            <h1 class="text-3xl font-bold">Beaver Dinner Log</h1>
             <p id="userIdDisplay" class="text-xs text-slate-400 dark:text-slate-500 mt-1 break-all">Connecting...</p>
         </div>
 
@@ -71,6 +66,7 @@
             <!-- Step 1: Date -->
             <div class="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
                 <label class="block text-md font-semibold mb-3 text-center text-slate-600 dark:text-slate-300">Step 1: When?</label>
+                <!-- Added value attribute will be handled by JS for default date -->
                 <input id="dateInput" type="date" class="relative w-full p-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 transition duration-200">
             </div>
 
@@ -201,12 +197,10 @@
 
             const els = {
                 loading: document.getElementById('loadingOverlay'),
-                // Views & Nav
                 logView: document.getElementById('logView'),
                 historyView: document.getElementById('historyView'),
                 navLogBtn: document.getElementById('navLogBtn'),
                 navHistoryBtn: document.getElementById('navHistoryBtn'),
-                // Inputs
                 mealInput: document.getElementById('mealInput'),
                 dateInput: document.getElementById('dateInput'),
                 addButton: document.getElementById('addButton'),
@@ -215,7 +209,6 @@
                 messageBox: document.getElementById('messageBox'),
                 userIdDisplay: document.getElementById('userIdDisplay'),
                 tagButtons: document.querySelectorAll('.tag-btn'),
-                // Modals
                 dinnerModal: document.getElementById('dinnerModal'),
                 closeModalBtn: document.getElementById('closeModalBtn'),
                 modalImage: document.getElementById('modalImage'),
@@ -226,7 +219,6 @@
                 cancelDelete: document.getElementById('cancelDeleteBtn'),
                 confirmDelete: document.getElementById('confirmDeleteBtn'),
                 deleteMealName: document.getElementById('deleteMealName'),
-                // Photo
                 photoUpload: document.getElementById('photoUpload'),
                 uploadBtn: document.getElementById('uploadTriggerButton'),
                 imagePreview: document.getElementById('imagePreview'),
@@ -241,24 +233,19 @@
             let fileToUpload = null;
             let docIdToDelete = null;
 
-            // --- NAVIGATION LOGIC ---
             function switchTab(tab) {
                 if (tab === 'log') {
                     els.logView.classList.remove('hidden');
                     els.historyView.classList.add('hidden');
-                    
                     els.navLogBtn.classList.add('text-blue-600', 'dark:text-blue-400');
                     els.navLogBtn.classList.remove('text-slate-400', 'dark:text-slate-500');
-                    
                     els.navHistoryBtn.classList.remove('text-blue-600', 'dark:text-blue-400');
                     els.navHistoryBtn.classList.add('text-slate-400', 'dark:text-slate-500');
                 } else {
                     els.logView.classList.add('hidden');
                     els.historyView.classList.remove('hidden');
-                    
                     els.navHistoryBtn.classList.add('text-blue-600', 'dark:text-blue-400');
                     els.navHistoryBtn.classList.remove('text-slate-400', 'dark:text-slate-500');
-                    
                     els.navLogBtn.classList.remove('text-blue-600', 'dark:text-blue-400');
                     els.navLogBtn.classList.add('text-slate-400', 'dark:text-slate-500');
                 }
@@ -267,17 +254,15 @@
             els.navLogBtn.addEventListener('click', () => switchTab('log'));
             els.navHistoryBtn.addEventListener('click', () => switchTab('history'));
 
-            // --- CORE FUNCTIONS ---
-            function showMessage(msg, type='error') { /* Same as before, simplified for brevity in logic */ alert(msg); } // Replaced with alert for simplicity or use modal? Let's keep alert for errors for now to save space, or use a toast if preferred. Actually, let's stick to the toast logic but minimal.
-            
-            // ... Re-implementing the Toast Logic properly ...
             const msgBox = document.createElement('div');
-            msgBox.className = "fixed top-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-full shadow-lg z-50 hidden transition-all duration-300 font-semibold text-sm";
+            // CHANGED: Position set to bottom, just above the nav bar (bottom-20)
+            msgBox.className = "fixed bottom-24 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-full shadow-lg z-50 hidden transition-all duration-300 font-semibold text-sm";
             document.body.appendChild(msgBox);
 
             function toast(msg, type='success') {
                 msgBox.textContent = msg;
-                msgBox.className = `fixed top-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-full shadow-lg z-50 transition-all duration-300 font-semibold text-sm ${type === 'error' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}`;
+                // CHANGED: Toast now appears at the bottom (bottom-24)
+                msgBox.className = `fixed bottom-24 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-full shadow-lg z-50 transition-all duration-300 font-semibold text-sm ${type === 'error' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}`;
                 msgBox.style.display = 'block';
                 setTimeout(() => { msgBox.style.display = 'none'; }, 3000);
             }
@@ -341,9 +326,15 @@
                 else { btn.classList.remove(...sel); btn.classList.add(...un); }
             }
 
+            // NEW: Function to set default date
+            function setDefaultDate() {
+                const today = new Date().toISOString().split('T')[0];
+                els.dateInput.value = today;
+            }
+
             function resetForm() {
                 els.mealInput.value = '';
-                els.dateInput.value = '';
+                setDefaultDate(); // Reset date to today
                 selectedTags = [];
                 editingDocId = null;
                 els.addButton.textContent = 'Log This Dinner';
@@ -352,11 +343,8 @@
                 els.photoUpload.value = '';
                 els.imagePreview.src = 'https://placehold.co/100x100/e2e8f0/9ca3af?text=Preview';
                 els.uploadStatus.textContent = '';
-                els.dateInput.setAttribute('placeholder', 'Select a date...');
-                // Switch back to log view on reset if needed, but better to stay where user is.
             }
 
-            // --- ACTIONS ---
             async function handleAdd() {
                 const meal = els.mealInput.value.trim();
                 if (!isAuthenticated) return toast('App not connected.', 'error');
@@ -393,8 +381,6 @@
                     resetForm();
                     els.addButton.disabled = false;
                     els.uploadStatus.textContent = '';
-                    // Optional: Switch to history view to see it? 
-                    // switchTab('history'); 
                 } catch(e) { console.error(e); toast('Error saving.', 'error'); els.addButton.disabled = false; }
             }
 
@@ -419,13 +405,12 @@
                 resetForm();
                 els.mealInput.value = entry.meal;
                 els.dateInput.value = new Date(entry.date).toISOString().split('T')[0];
-                els.dateInput.removeAttribute('placeholder');
                 selectedTags = entry.tags || [];
                 editingDocId = id;
                 els.addButton.textContent = 'Update Entry';
                 if(entry.imageUrl) { els.imagePreview.src = entry.imageUrl; els.uploadStatus.textContent = "Current photo"; }
                 els.tagButtons.forEach(btn => applyTagStyles(btn, selectedTags.includes(btn.dataset.tag)));
-                switchTab('log'); // Switch to log view to edit
+                switchTab('log'); 
                 window.scrollTo({top:0, behavior:'smooth'});
             }
 
@@ -458,7 +443,13 @@
                     const ent = dinners.find(d => d.id === item.dataset.id);
                     els.modalMeal.textContent = ent.meal;
                     els.modalDate.textContent = new Date(ent.date).toLocaleDateString('en-US', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
-                    els.modalTags.innerHTML = (ent.tags||[]).map(t => `<span class="text-xs bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded-full">${t}</span>`).join('');
+                    els.modalTags.innerHTML = (ent.tags||[]).map(t => {
+                        let c = 'bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-300';
+                        if(t==='Chad') c='bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300';
+                        if(t==='Mom') c='bg-pink-100 text-pink-700 dark:bg-pink-900/40 dark:text-pink-300';
+                        if(t==='Dad') c='bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300';
+                        return `<span class="text-xs ${c} px-2 py-1 rounded-full">${t}</span>`;
+                    }).join('');
                     els.modalImage.src = ent.imageUrl || '';
                     els.modalImage.style.display = ent.imageUrl ? 'block' : 'none';
                     els.dinnerModal.style.display = 'flex';
@@ -476,11 +467,8 @@
                 if(e.target === els.deleteModal) els.deleteModal.style.display = 'none';
             };
             
-            // Placeholder logic
-            els.dateInput.setAttribute('placeholder', 'Select a date...');
-            els.dateInput.addEventListener('change', e => {
-               e.target.value ? e.target.removeAttribute('placeholder') : e.target.setAttribute('placeholder', 'Select a date...');
-            });
+            // Initialize Date
+            setDefaultDate();
 
             // Init
             onAuthStateChanged(auth, user => {
