@@ -383,7 +383,10 @@
                 elements.photoUpload.value = '';
                 elements.imagePreview.src = 'https://placehold.co/100x100/e2e8f0/9ca3af?text=Preview';
                 elements.uploadStatus.textContent = '';
-                elements.mealInput.focus();
+                
+                // --- REMOVED FOCUS CALL ---
+                // elements.mealInput.focus(); <--- This line is gone
+                
                  // Reset date placeholder
                 elements.dateInput.setAttribute('placeholder', 'Select a date...');
             }
