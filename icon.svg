@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-<!-- Background circle -->
-<circle cx="256" cy="256" r="256" fill="#1e293b"/>
+<!-- Background Rectangle (Fills the whole icon so no white edges appear) -->
+<rect width="512" height="512" fill="#1e293b"/>
 
-<!-- Utensils scaled and positioned to fit inside -->
+<!-- Utensils scaled and positioned -->
 <g fill="#f1f5f9" transform="translate(110, 80) scale(0.65)">
   <g transform="translate(20, 0)">
 		<path d="M112.44,202.771L73.872,28.953C70.215,12.47,55.598,0.741,38.715,0.741c-6.956,0-12.596,5.639-12.596,12.596v204.133
