@@ -11,7 +11,7 @@
       "src": "icon.svg",
       "sizes": "512x512",
       "type": "image/svg+xml",
-      "purpose": "any" 
+      "purpose": "any"
     },
     {
       "src": "icon.svg",
@@ -23,7 +23,7 @@
       "src": "icon-mono.svg",
       "sizes": "512x512",
       "type": "image/svg+xml",
-      "purpose": "monochrome"
+      "purpose": "any monochrome"
     }
   ]
 }
