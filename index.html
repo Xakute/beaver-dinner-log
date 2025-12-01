@@ -66,7 +66,6 @@
             <!-- Step 1: Date -->
             <div class="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
                 <label class="block text-md font-semibold mb-3 text-center text-slate-600 dark:text-slate-300">Step 1: When?</label>
-                <!-- Added value attribute will be handled by JS for default date -->
                 <input id="dateInput" type="date" class="relative w-full p-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 transition duration-200">
             </div>
 
@@ -255,13 +254,11 @@
             els.navHistoryBtn.addEventListener('click', () => switchTab('history'));
 
             const msgBox = document.createElement('div');
-            // CHANGED: Position set to bottom, just above the nav bar (bottom-20)
             msgBox.className = "fixed bottom-24 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-full shadow-lg z-50 hidden transition-all duration-300 font-semibold text-sm";
             document.body.appendChild(msgBox);
 
             function toast(msg, type='success') {
                 msgBox.textContent = msg;
-                // CHANGED: Toast now appears at the bottom (bottom-24)
                 msgBox.className = `fixed bottom-24 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-full shadow-lg z-50 transition-all duration-300 font-semibold text-sm ${type === 'error' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}`;
                 msgBox.style.display = 'block';
                 setTimeout(() => { msgBox.style.display = 'none'; }, 3000);
@@ -304,7 +301,7 @@
                             <div class="flex items-center flex-grow min-w-0">
                                 ${thumb}
                                 <div class="entry-click cursor-pointer min-w-0" data-id="${entry.id}">
-                                    <p class="text-base font-semibold text-slate-800 dark:text-slate-100 truncate">${entry.meal}</p>
+                                    <p class="text-base font-semibold text-slate-800 dark:text-slate-100 whitespace-normal break-words">${entry.meal}</p>
                                     <div class="flex gap-1 mt-0.5">${tags}</div>
                                 </div>
                             </div>
@@ -326,15 +323,18 @@
                 else { btn.classList.remove(...sel); btn.classList.add(...un); }
             }
 
-            // NEW: Function to set default date
+            // NEW: Function to set default date using LOCAL time (Fixes "Day Ahead" Bug)
             function setDefaultDate() {
-                const today = new Date().toISOString().split('T')[0];
-                els.dateInput.value = today;
+                const today = new Date();
+                const year = today.getFullYear();
+                const month = String(today.getMonth() + 1).padStart(2, '0');
+                const day = String(today.getDate()).padStart(2, '0');
+                els.dateInput.value = `${year}-${month}-${day}`;
             }
 
             function resetForm() {
                 els.mealInput.value = '';
-                setDefaultDate(); // Reset date to today
+                setDefaultDate(); // Reset date to today (Local)
                 selectedTags = [];
                 editingDocId = null;
                 els.addButton.textContent = 'Log This Dinner';
@@ -343,8 +343,10 @@
                 els.photoUpload.value = '';
                 els.imagePreview.src = 'https://placehold.co/100x100/e2e8f0/9ca3af?text=Preview';
                 els.uploadStatus.textContent = '';
+                // Placeholder reset removed as we default to today
             }
 
+            // --- ACTIONS ---
             async function handleAdd() {
                 const meal = els.mealInput.value.trim();
                 if (!isAuthenticated) return toast('App not connected.', 'error');
@@ -405,6 +407,7 @@
                 resetForm();
                 els.mealInput.value = entry.meal;
                 els.dateInput.value = new Date(entry.date).toISOString().split('T')[0];
+                // No placeholder removal needed
                 selectedTags = entry.tags || [];
                 editingDocId = id;
                 els.addButton.textContent = 'Update Entry';
