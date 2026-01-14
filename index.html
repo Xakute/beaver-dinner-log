@@ -118,25 +118,66 @@
                 <!-- Entries inserted here -->
             </div>
         </div>
+
+        <!-- VIEW 3: STATS (IMPROVED) -->
+        <div id="statsView" class="hidden space-y-5">
+            <div class="grid grid-cols-2 gap-4">
+                <div class="p-5 bg-blue-600 rounded-2xl text-white shadow-lg flex flex-col items-center justify-center">
+                    <span class="text-4xl font-bold" id="statTotalCount">0</span>
+                    <span class="text-xs uppercase tracking-wider font-semibold opacity-80 mt-1">Total Logged</span>
+                </div>
+                <div class="p-5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm flex flex-col items-center justify-center">
+                    <span class="text-4xl font-bold text-slate-700 dark:text-slate-200" id="statUniqueCount">0</span>
+                    <span class="text-xs uppercase tracking-wider font-semibold text-slate-400 mt-1">Meals Tracked</span>
+                </div>
+            </div>
+
+            <!-- Food Word Cloud -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                <div class="p-4 border-b border-slate-100 dark:border-slate-700">
+                    <h3 class="font-bold text-slate-700 dark:text-slate-200">☁️ Food Cloud</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Tap any food to see details</p>
+                </div>
+                <div id="statWordCloud" class="p-4 flex flex-wrap gap-2 justify-center">
+                    <!-- Word cloud bubbles inserted here -->
+                </div>
+            </div>
+
+            <!-- Leaderboard -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                 <div class="p-4 border-b border-slate-100 dark:border-slate-700">
+                    <h3 class="font-bold text-slate-700 dark:text-slate-200">🍽️ Who Ate The Most?</h3>
+                </div>
+                <div id="statLeaderboard" class="p-4 space-y-3">
+                    <!-- Leaderboard bars inserted here -->
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- BOTTOM NAVIGATION BAR -->
     <div class="fixed bottom-0 left-0 w-full bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex justify-around items-center py-3 px-2 z-40 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
-        <button id="navLogBtn" class="flex flex-col items-center justify-center w-1/2 text-blue-600 dark:text-blue-400 transition-colors">
+        <button id="navLogBtn" class="flex flex-col items-center justify-center w-1/3 text-blue-600 dark:text-blue-400 transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
             </svg>
-            <span class="text-xs font-semibold">Log Dinner</span>
+            <span class="text-xs font-semibold">Log</span>
         </button>
-        <button id="navHistoryBtn" class="flex flex-col items-center justify-center w-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
+        <button id="navHistoryBtn" class="flex flex-col items-center justify-center w-1/3 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <span class="text-xs font-semibold">History</span>
         </button>
+        <button id="navStatsBtn" class="flex flex-col items-center justify-center w-1/3 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            <span class="text-xs font-semibold">Stats</span>
+        </button>
     </div>
 
-    <!-- Modals (Details & Delete) -->
+    <!-- MAIN DINNER DETAIL MODAL -->
     <div id="dinnerModal" class="modal">
         <div class="modal-content bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-lg">
             <div class="flex justify-end mb-2">
@@ -155,6 +196,42 @@
         </div>
     </div>
     
+    <!-- STATS DRILLDOWN MODAL -->
+    <div id="wordStatsModal" class="modal">
+        <div class="modal-content bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-sm p-6 relative">
+            <button id="closeWordModalBtn" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+            <div class="text-center space-y-4">
+                <h3 class="text-2xl font-bold text-slate-800 dark:text-slate-100 capitalize" id="wsWord">Chicken</h3>
+                
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
+                        <p class="text-xs text-blue-600 dark:text-blue-400 uppercase font-bold">Times Eaten</p>
+                        <p class="text-xl font-bold text-slate-700 dark:text-slate-200" id="wsCount">0</p>
+                    </div>
+                    <div class="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg">
+                         <p class="text-xs text-green-600 dark:text-green-400 uppercase font-bold">Avg Gap</p>
+                         <p class="text-xl font-bold text-slate-700 dark:text-slate-200" id="wsFreq">0 days</p>
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 dark:bg-slate-700/30 p-4 rounded-lg border border-slate-100 dark:border-slate-700">
+                    <p class="text-xs text-slate-500 dark:text-slate-400 uppercase font-bold mb-1">Last Eaten</p>
+                    <p class="text-lg font-bold text-slate-700 dark:text-slate-200" id="wsLastDate">Oct 12</p>
+                    <p class="text-sm text-slate-400" id="wsDaysAgo">(2 days ago)</p>
+                </div>
+
+                <div class="text-left mt-4">
+                     <p class="text-xs text-slate-500 dark:text-slate-400 font-bold mb-2">HISTORY:</p>
+                     <div id="wsHistoryList" class="max-h-32 overflow-y-auto text-sm space-y-1 text-slate-600 dark:text-slate-300">
+                         <!-- Dates go here -->
+                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="deleteConfirmModal" class="modal">
         <div class="modal-content bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-sm p-6 text-center">
             <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-100">Are you sure?</h3>
@@ -198,14 +275,15 @@
                 loading: document.getElementById('loadingOverlay'),
                 logView: document.getElementById('logView'),
                 historyView: document.getElementById('historyView'),
+                statsView: document.getElementById('statsView'),
                 navLogBtn: document.getElementById('navLogBtn'),
                 navHistoryBtn: document.getElementById('navHistoryBtn'),
+                navStatsBtn: document.getElementById('navStatsBtn'),
                 mealInput: document.getElementById('mealInput'),
                 dateInput: document.getElementById('dateInput'),
                 addButton: document.getElementById('addButton'),
                 searchInput: document.getElementById('searchInput'),
                 dinnerList: document.getElementById('dinnerList'),
-                messageBox: document.getElementById('messageBox'),
                 userIdDisplay: document.getElementById('userIdDisplay'),
                 tagButtons: document.querySelectorAll('.tag-btn'),
                 dinnerModal: document.getElementById('dinnerModal'),
@@ -222,6 +300,20 @@
                 uploadBtn: document.getElementById('uploadTriggerButton'),
                 imagePreview: document.getElementById('imagePreview'),
                 uploadStatus: document.getElementById('uploadStatus'),
+                // Stats Elements
+                statTotalCount: document.getElementById('statTotalCount'),
+                statUniqueCount: document.getElementById('statUniqueCount'),
+                statWordCloud: document.getElementById('statWordCloud'),
+                statLeaderboard: document.getElementById('statLeaderboard'),
+                // Word Stats Modal
+                wordStatsModal: document.getElementById('wordStatsModal'),
+                closeWordModalBtn: document.getElementById('closeWordModalBtn'),
+                wsWord: document.getElementById('wsWord'),
+                wsCount: document.getElementById('wsCount'),
+                wsFreq: document.getElementById('wsFreq'),
+                wsLastDate: document.getElementById('wsLastDate'),
+                wsDaysAgo: document.getElementById('wsDaysAgo'),
+                wsHistoryList: document.getElementById('wsHistoryList'),
             };
 
             let dinners = [];
@@ -233,25 +325,143 @@
             let docIdToDelete = null;
 
             function switchTab(tab) {
+                [els.logView, els.historyView, els.statsView].forEach(el => el.classList.add('hidden'));
+                [els.navLogBtn, els.navHistoryBtn, els.navStatsBtn].forEach(btn => {
+                    btn.classList.remove('text-blue-600', 'dark:text-blue-400');
+                    btn.classList.add('text-slate-400', 'dark:text-slate-500');
+                });
+
                 if (tab === 'log') {
                     els.logView.classList.remove('hidden');
-                    els.historyView.classList.add('hidden');
                     els.navLogBtn.classList.add('text-blue-600', 'dark:text-blue-400');
                     els.navLogBtn.classList.remove('text-slate-400', 'dark:text-slate-500');
-                    els.navHistoryBtn.classList.remove('text-blue-600', 'dark:text-blue-400');
-                    els.navHistoryBtn.classList.add('text-slate-400', 'dark:text-slate-500');
-                } else {
-                    els.logView.classList.add('hidden');
+                } else if (tab === 'history') {
                     els.historyView.classList.remove('hidden');
                     els.navHistoryBtn.classList.add('text-blue-600', 'dark:text-blue-400');
                     els.navHistoryBtn.classList.remove('text-slate-400', 'dark:text-slate-500');
-                    els.navLogBtn.classList.remove('text-blue-600', 'dark:text-blue-400');
-                    els.navLogBtn.classList.add('text-slate-400', 'dark:text-slate-500');
+                } else if (tab === 'stats') {
+                    els.statsView.classList.remove('hidden');
+                    els.navStatsBtn.classList.add('text-blue-600', 'dark:text-blue-400');
+                    els.navStatsBtn.classList.remove('text-slate-400', 'dark:text-slate-500');
+                    calculateStats();
                 }
             }
 
             els.navLogBtn.addEventListener('click', () => switchTab('log'));
             els.navHistoryBtn.addEventListener('click', () => switchTab('history'));
+            els.navStatsBtn.addEventListener('click', () => switchTab('stats'));
+
+            // --- STATS LOGIC ---
+            function calculateStats() {
+                if (!dinners.length) return;
+
+                // 1. Total Count
+                els.statTotalCount.textContent = dinners.length;
+                els.statUniqueCount.textContent = new Set(dinners.map(d => d.meal.trim().toLowerCase())).size;
+
+                // 2. Leaderboard
+                const tagCounts = { 'Mom': 0, 'Dad': 0, 'Chad': 0 };
+                dinners.forEach(d => { if (d.tags) d.tags.forEach(t => { if (tagCounts[t] !== undefined) tagCounts[t]++; }); });
+                const maxCount = Math.max(...Object.values(tagCounts)) || 1;
+                els.statLeaderboard.innerHTML = Object.entries(tagCounts)
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([name, count]) => {
+                        const percentage = (count / maxCount) * 100;
+                        let color = 'bg-slate-400';
+                        if(name==='Chad') color='bg-blue-500';
+                        if(name==='Mom') color='bg-pink-500';
+                        if(name==='Dad') color='bg-green-500';
+                        return `<div><div class="flex justify-between text-sm font-medium mb-1 text-slate-700 dark:text-slate-300"><span>${name}</span><span>${count} dinners</span></div><div class="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-2.5"><div class="${color} h-2.5 rounded-full" style="width: ${percentage}%"></div></div></div>`;
+                    }).join('');
+
+                // 3. WORD CLOUD GENERATION
+                const stopWords = ['and', 'with', 'the', 'a', 'an', '&', 'of', 'in', 'on', 'w/', 'sauce'];
+                const wordCounts = {};
+
+                dinners.forEach(d => {
+                    // Split by spaces, commas, ampersands
+                    const words = d.meal.toLowerCase().split(/[\s,&]+/);
+                    words.forEach(w => {
+                        const cleanWord = w.replace(/[^a-z0-9]/g, ''); // Remove punctuation
+                        if (cleanWord.length > 2 && !stopWords.includes(cleanWord)) {
+                            wordCounts[cleanWord] = (wordCounts[cleanWord] || 0) + 1;
+                        }
+                    });
+                });
+
+                // Convert to array and sort
+                const sortedWords = Object.entries(wordCounts).sort((a, b) => b[1] - a[1]); // All words
+                
+                els.statWordCloud.innerHTML = sortedWords.map(([word, count]) => {
+                    // Dynamic Sizing
+                    let sizeClass = "text-xs px-3 py-1"; // Default
+                    if (count > 8) sizeClass = "text-xl px-5 py-3 font-bold";
+                    else if (count > 4) sizeClass = "text-base px-4 py-2 font-semibold";
+                    else if (count > 2) sizeClass = "text-sm px-3 py-1.5 font-medium";
+
+                    return `<button onclick="openWordStats('${word}')" class="${sizeClass} bg-slate-100 hover:bg-blue-100 text-slate-600 hover:text-blue-600 dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-300 dark:hover:text-white rounded-full transition-colors duration-200 capitalize shadow-sm border border-slate-200 dark:border-slate-600">
+                        ${word} <span class="opacity-50 text-[0.8em] ml-1">${count}</span>
+                    </button>`;
+                }).join('');
+            }
+            
+            // Make function global for onclick in HTML
+            window.openWordStats = function(word) {
+                // Find all entries containing this word
+                const matches = dinners.filter(d => d.meal.toLowerCase().includes(word.toLowerCase()));
+                if (matches.length === 0) return;
+
+                // Sort descending (newest first)
+                matches.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                // 1. Stats
+                const count = matches.length;
+                const lastEntry = matches[0];
+                const lastDate = new Date(lastEntry.date);
+                const today = new Date();
+                
+                // Days Ago
+                const diffTime = Math.abs(today - lastDate);
+                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)); 
+                
+                // Average Frequency
+                let freqText = "N/A";
+                if (count > 1) {
+                    const firstDate = new Date(matches[matches.length - 1].date);
+                    const totalDaysSpan = (lastDate - firstDate) / (1000 * 60 * 60 * 24);
+                    const avgGap = Math.round(totalDaysSpan / (count - 1));
+                    freqText = `Every ${avgGap} days`;
+                } else {
+                    freqText = "First time!";
+                }
+
+                // Populate Modal
+                els.wsWord.textContent = word;
+                els.wsCount.textContent = count;
+                els.wsFreq.textContent = freqText;
+                els.wsLastDate.textContent = lastDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                els.wsDaysAgo.textContent = diffDays === 0 ? "(Today)" : `(${diffDays} days ago)`;
+                
+                // History List
+                els.wsHistoryList.innerHTML = matches.map(m => {
+                    const d = new Date(m.date);
+                    const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    return `<div class="flex justify-between border-b border-slate-100 dark:border-slate-700/50 py-1 last:border-0">
+                        <span>${dateStr}</span>
+                        <span class="text-slate-400 text-xs truncate max-w-[150px]">${m.meal}</span>
+                    </div>`
+                }).join('');
+
+                els.wordStatsModal.style.display = 'flex';
+            };
+
+            els.closeWordModalBtn.addEventListener('click', () => els.wordStatsModal.style.display = 'none');
+            window.onclick = e => {
+                 if(e.target === els.wordStatsModal) els.wordStatsModal.style.display = 'none';
+                 if(e.target === els.dinnerModal) els.dinnerModal.style.display = 'none';
+                 if(e.target === els.deleteModal) els.deleteModal.style.display = 'none';
+            };
+
 
             const msgBox = document.createElement('div');
             msgBox.className = "fixed bottom-24 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-full shadow-lg z-50 hidden transition-all duration-300 font-semibold text-sm";
@@ -323,7 +533,7 @@
                 else { btn.classList.remove(...sel); btn.classList.add(...un); }
             }
 
-            // NEW: Function to set default date using LOCAL time (Fixes "Day Ahead" Bug)
+            // NEW: Function to set default date using LOCAL time
             function setDefaultDate() {
                 const today = new Date();
                 const year = today.getFullYear();
@@ -334,7 +544,7 @@
 
             function resetForm() {
                 els.mealInput.value = '';
-                setDefaultDate(); // Reset date to today (Local)
+                setDefaultDate(); 
                 selectedTags = [];
                 editingDocId = null;
                 els.addButton.textContent = 'Log This Dinner';
@@ -343,7 +553,6 @@
                 els.photoUpload.value = '';
                 els.imagePreview.src = 'https://placehold.co/100x100/e2e8f0/9ca3af?text=Preview';
                 els.uploadStatus.textContent = '';
-                // Placeholder reset removed as we default to today
             }
 
             // --- ACTIONS ---
@@ -407,7 +616,6 @@
                 resetForm();
                 els.mealInput.value = entry.meal;
                 els.dateInput.value = new Date(entry.date).toISOString().split('T')[0];
-                // No placeholder removal needed
                 selectedTags = entry.tags || [];
                 editingDocId = id;
                 els.addButton.textContent = 'Update Entry';
@@ -482,6 +690,7 @@
                     onSnapshot(collection(db, dbCollectionPath), snap => {
                         dinners = snap.docs.map(d => ({id: d.id, ...d.data()}));
                         renderDinners(dinners);
+                        if(!els.statsView.classList.contains('hidden')) calculateStats();
                     });
                 } else { signInAnonymously(auth); }
             });
