@@ -458,8 +458,6 @@
                             // 3. Count Bigrams (Pairs) e.g. "bob evans"
                             for(let i=0; i < tokens.length - 1; i++) {
                                 const bigram = tokens[i] + ' ' + tokens[i+1];
-                                // Don't make bigrams starting/ending with stopwords usually, but for food names "mac and" is bad, "and cheese" is bad. 
-                                // Simple check: if both words aren't stopwords
                                 if(!stopWords.includes(tokens[i]) && !stopWords.includes(tokens[i+1])) {
                                      phraseCounts[bigram] = (phraseCounts[bigram] || 0) + 1;
                                 }
@@ -474,12 +472,10 @@
                     });
 
                     // 5. DEDUPLICATION LOGIC
-                    // If "Bob Evans" (count 5) exists, and "Bob" (count 5) exists, hide "Bob".
                     let finalPhrases = Object.entries(phraseCounts).sort((a,b) => b[1] - a[1]);
                     
                     // Filter out subsets
                     finalPhrases = finalPhrases.filter(([phrase, count]) => {
-                        // Check if this phrase is contained inside a larger phrase with the SAME or HIGHER count
                         const isSubset = finalPhrases.some(([otherPhrase, otherCount]) => {
                             return otherPhrase !== phrase && otherPhrase.includes(phrase) && otherCount >= count;
                         });
@@ -508,27 +504,36 @@
                         `).join('');
                     }
 
-                    // Overdue Favorite (Using Smart Phrases)
+                    // --- NEW DYNAMIC OVERDUE LOGIC (SHUFFLE) ---
                     if(els.statOverdue) {
-                        // Filter for items eaten at least twice
+                        // 1. Get Top Candidates (Popular things not eaten recently)
                         const popularPhrases = finalPhrases.filter(x => x[1] >= 2).map(x => x[0]);
-                        let oldestFav = { word: null, date: new Date() };
+                        let overdueCandidates = [];
                         
                         popularPhrases.forEach(word => {
-                            // Find most recent entry containing this phrase
                             const entries = dinners.filter(d => (d.meal || "").toLowerCase().includes(word));
                             entries.sort((a, b) => new Date(b.date) - new Date(a.date));
                             if(entries.length > 0 && entries[0].date) {
                                 const lastEaten = new Date(entries[0].date);
-                                if (lastEaten < oldestFav.date) oldestFav = { word: word, date: lastEaten };
+                                const daysAgo = Math.floor((new Date() - lastEaten) / (1000 * 60 * 60 * 24));
+                                // Consider it "Overdue" if eaten more than 14 days ago
+                                if (daysAgo > 14) {
+                                    overdueCandidates.push({ word: word, daysAgo: daysAgo });
+                                }
                             }
                         });
 
-                        if (oldestFav.word) {
-                            const daysAgo = Math.floor((new Date() - oldestFav.date) / (1000 * 60 * 60 * 24));
-                            els.statOverdue.innerHTML = `<span class="capitalize text-lg font-bold">${oldestFav.word}</span> <span class="text-sm opacity-75">(${daysAgo} days ago)</span>`;
+                        // 2. Sort by "Most Overdue" to find the biggest gaps
+                        overdueCandidates.sort((a, b) => b.daysAgo - a.daysAgo);
+
+                        // 3. Pick randomly from the top 5 overdue items to show variety
+                        if (overdueCandidates.length > 0) {
+                            const topX = overdueCandidates.slice(0, 5); // Take top 5 candidates
+                            const randomPick = topX[Math.floor(Math.random() * topX.length)]; // Randomize
+                            
+                            els.statOverdue.innerHTML = `<span class="capitalize text-lg font-bold">${randomPick.word}</span> <span class="text-sm opacity-75">(${randomPick.daysAgo} days ago)</span>`;
                         } else {
-                            els.statOverdue.textContent = "Need more data (2+ eats)";
+                            els.statOverdue.textContent = "Log more meals (nothing overdue yet!)";
                         }
                     }
 
