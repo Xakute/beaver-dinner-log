@@ -114,11 +114,11 @@
             <div id="dinnerList" class="space-y-4 pb-4"></div>
         </div>
 
-        <!-- VIEW 3: CLOUD -->
+        <!-- VIEW 3: FOODS (RENAMED FROM CLOUD) -->
         <div id="cloudView" class="hidden space-y-4">
             <div class="p-6 text-center space-y-2">
-                <h2 class="text-2xl font-bold text-slate-800 dark:text-slate-100">☁️ The Food Cloud</h2>
-                <p class="text-slate-500 dark:text-slate-400 text-sm">Tap a bubble to see when you ate it.</p>
+                <h2 class="text-2xl font-bold text-slate-800 dark:text-slate-100">🍽️ Your Foods</h2>
+                <p class="text-slate-500 dark:text-slate-400 text-sm">Meals you eat often appear larger.</p>
             </div>
             <div id="statWordCloud" class="p-4 flex flex-wrap gap-2 justify-center content-start">
                 <!-- Bubbles inserted here -->
@@ -220,7 +220,7 @@
         </button>
         <button id="navCloudBtn" class="nav-btn flex flex-col items-center justify-center w-1/4 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors" onclick="switchTab('cloud')">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" /></svg>
-            <span class="text-[10px] font-bold uppercase">Cloud</span>
+            <span class="text-[10px] font-bold uppercase">Foods</span>
         </button>
         <button id="navStatsBtn" class="nav-btn flex flex-col items-center justify-center w-1/4 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors" onclick="switchTab('stats')">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
@@ -322,6 +322,7 @@
             const auth = getAuth(app);
             const dbCollectionPath = `dinners/all/entries`;
 
+            // Helper to safe-select elements (fixes "Config Error" on missing DOM)
             const safeGet = (id) => {
                 const el = document.getElementById(id);
                 if (!el) console.warn(`Element #${id} not found in DOM`);
@@ -465,7 +466,7 @@
                     if(els.statChaos) els.statChaos.textContent = chaosCount;
 
                     // --- NEW INTELLIGENT PHRASE ENGINE ---
-                    const stopWords = ['and', 'with', 'the', 'a', 'an', '&', 'of', 'in', 'on', 'w/', 'sauce', 'meal', 'dinner', 'lunch', 'for', 'from'];
+                    const stopWords = ['and', 'with', 'the', 'a', 'an', '&', 'of', 'in', 'on', 'w/', 'sauce', 'meal', 'dinner', 'lunch', 'for', 'from', 'we', 'got', 'here', 'watch', 'texas', 'made', 'ate', 'mom', 'dad', 'chad', 'zeus', 'takeout', 'restaurant', 'place', 'eat', 'eating'];
                     const phraseCounts = {};
 
                     dinners.forEach(d => {
@@ -499,14 +500,24 @@
                         });
                         return !isSubset;
                     });
+                    
+                    // Filter low count items for Cloud
+                    const cloudPhrases = finalPhrases.filter(([_, count]) => count >= 2).slice(0, 50);
 
                     if(els.statWordCloud) {
-                        els.statWordCloud.innerHTML = finalPhrases.map(([word, count]) => {
+                        els.statWordCloud.innerHTML = cloudPhrases.map(([word, count], index) => {
+                            // NEW: Tiered Sizing Logic
                             let sizeClass = "text-xs px-3 py-1";
-                            if (count > 8) sizeClass = "text-xl px-5 py-3 font-bold";
-                            else if (count > 4) sizeClass = "text-base px-4 py-2 font-semibold";
-                            else if (count > 2) sizeClass = "text-sm px-3 py-1.5 font-medium";
-                            return `<button onclick="openWordStats('${word}')" class="${sizeClass} bg-slate-100 hover:bg-blue-100 text-slate-600 hover:text-blue-600 dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-300 dark:hover:text-white rounded-full transition-colors duration-200 capitalize shadow-sm border border-slate-200 dark:border-slate-600 mb-2">${word}</button>`;
+                            // Top 3 (Huge)
+                            if (index < 3) sizeClass = "text-3xl px-6 py-3 font-extrabold shadow-md border-2 border-slate-300 dark:border-slate-500";
+                            // Rank 4-10 (Big)
+                            else if (index < 10) sizeClass = "text-xl px-4 py-2 font-bold shadow-sm";
+                            // Rank 11-20 (Medium)
+                            else if (index < 20) sizeClass = "text-base px-3 py-1.5 font-semibold";
+                            // The rest (Small)
+                            else sizeClass = "text-xs px-2 py-1 font-medium opacity-80";
+
+                            return `<button onclick="openWordStats('${word}')" class="${sizeClass} bg-slate-100 hover:bg-blue-100 text-slate-600 hover:text-blue-600 dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-300 dark:hover:text-white rounded-full transition-all duration-200 capitalize border border-slate-200 dark:border-slate-600 mb-2">${word}</button>`;
                         }).join('');
                     }
 
@@ -621,7 +632,7 @@
                         }
                     }
 
-                    // Fastest Repeat
+                    // Fastest Repeat - Now with loose matching
                     if(els.statFastestRepeat) {
                         let minGap = Infinity;
                         let fastMeal = null;
