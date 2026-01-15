@@ -516,7 +516,8 @@
                         return !recentMeals.has(lower) && !lower.includes('leftover');
                     });
                 
-                const unique eligible = [...new Set(eligibleMeals)];
+                // FIXED TYPO HERE:
+                const uniqueEligible = [...new Set(eligibleMeals)];
 
                 if (uniqueEligible.length > 0) {
                     const randomMeal = uniqueEligible[Math.floor(Math.random() * uniqueEligible.length)];
@@ -527,9 +528,6 @@
                     els.pickerMealName.textContent = "You've eaten everything recently!";
                 }
             });
-            
-            // Fix small typo in logic above
-            const uniqueEligible = []; // Placeholder
 
             // Re-implement onclick globally
             window.openWordStats = function(word) {
