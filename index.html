@@ -165,14 +165,14 @@
                 <div class="bg-orange-50 dark:bg-orange-900/20 p-5 rounded-2xl border border-orange-100 dark:border-orange-900/50 shadow-sm">
                     <h3 class="font-bold text-orange-800 dark:text-orange-200 mb-1">⏳ Most Overdue Favorite</h3>
                     <p class="text-xs text-orange-600 dark:text-orange-300 mb-3">A popular meal you haven't had in a while.</p>
-                    <div id="statOverdue" class="font-medium text-slate-700 dark:text-slate-200">Calculating...</div>
+                    <div id="statOverdue" class="font-medium text-slate-700 dark:text-slate-200">No data found</div>
                 </div>
 
                 <!-- Fastest Repeat -->
                 <div class="bg-purple-50 dark:bg-purple-900/20 p-5 rounded-2xl border border-purple-100 dark:border-purple-900/50 shadow-sm">
                     <h3 class="font-bold text-purple-800 dark:text-purple-200 mb-1">⚡ Fastest Repeat</h3>
                     <p class="text-xs text-purple-600 dark:text-purple-300 mb-3">The quickest we ate the same thing again.</p>
-                    <div id="statFastestRepeat" class="font-medium text-slate-700 dark:text-slate-200">Calculating...</div>
+                    <div id="statFastestRepeat" class="font-medium text-slate-700 dark:text-slate-200">No data found</div>
                 </div>
 
                 <!-- Chaos Nights -->
@@ -416,100 +416,123 @@
             };
 
             function calculateStats() {
-                if (!dinners.length) return;
+                try {
+                    if (!dinners.length) return;
 
-                if(els.statTotalCount) els.statTotalCount.textContent = dinners.length;
+                    // Initialize fallback text so it doesn't get stuck on "Calculating..."
+                    if(els.statOverdue) els.statOverdue.textContent = "No data found";
+                    if(els.statFastestRepeat) els.statFastestRepeat.textContent = "No repeats found";
 
-                const leftoverCount = dinners.filter(d => d.meal.toLowerCase().includes('leftover')).length;
-                if(els.statLeftovers) els.statLeftovers.textContent = leftoverCount;
+                    if(els.statTotalCount) els.statTotalCount.textContent = dinners.length;
 
-                const dateCounts = {};
-                dinners.forEach(d => {
-                    const date = d.date.split('T')[0];
-                    dateCounts[date] = (dateCounts[date] || 0) + 1;
-                });
-                const chaosCount = Object.values(dateCounts).filter(c => c > 1).length;
-                if(els.statChaos) els.statChaos.textContent = chaosCount;
+                    const leftoverCount = dinners.filter(d => (d.meal || "").toLowerCase().includes('leftover')).length;
+                    if(els.statLeftovers) els.statLeftovers.textContent = leftoverCount;
 
-                // Word Analysis
-                const stopWords = ['and', 'with', 'the', 'a', 'an', '&', 'of', 'in', 'on', 'w/', 'sauce', 'meal', 'dinner', 'lunch'];
-                const wordCounts = {};
-                dinners.forEach(d => {
-                    const words = d.meal.toLowerCase().split(/[\s,&]+/);
-                    words.forEach(w => {
-                        const clean = w.replace(/[^a-z0-9]/g, ''); 
-                        if (clean.length > 2 && !stopWords.includes(clean)) {
-                            wordCounts[clean] = (wordCounts[clean] || 0) + 1;
+                    const dateCounts = {};
+                    dinners.forEach(d => {
+                        if(d.date) {
+                            const date = d.date.split('T')[0];
+                            dateCounts[date] = (dateCounts[date] || 0) + 1;
                         }
                     });
-                });
+                    const chaosCount = Object.values(dateCounts).filter(c => c > 1).length;
+                    if(els.statChaos) els.statChaos.textContent = chaosCount;
 
-                const sortedWords = Object.entries(wordCounts).sort((a, b) => b[1] - a[1]);
-
-                if(els.statWordCloud) {
-                    els.statWordCloud.innerHTML = sortedWords.map(([word, count]) => {
-                        let sizeClass = "text-xs px-3 py-1";
-                        if (count > 8) sizeClass = "text-xl px-5 py-3 font-bold";
-                        else if (count > 4) sizeClass = "text-base px-4 py-2 font-semibold";
-                        else if (count > 2) sizeClass = "text-sm px-3 py-1.5 font-medium";
-                        return `<button onclick="openWordStats('${word}')" class="${sizeClass} bg-slate-100 hover:bg-blue-100 text-slate-600 hover:text-blue-600 dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-300 dark:hover:text-white rounded-full transition-colors duration-200 capitalize shadow-sm border border-slate-200 dark:border-slate-600 mb-2">${word}</button>`;
-                    }).join('');
-                }
-
-                if(els.statTopMeals) {
-                    els.statTopMeals.innerHTML = sortedWords.slice(0, 5).map(([name, count], index) => `
-                        <div class="flex items-center justify-between p-2 border-b border-slate-100 dark:border-slate-700/50 last:border-0">
-                            <div class="flex items-center gap-3">
-                                <span class="font-bold text-slate-400 w-4 text-center">${index + 1}</span>
-                                <span class="font-medium text-slate-700 dark:text-slate-200 capitalize">${name}</span>
-                            </div>
-                            <span class="text-xs font-bold bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded-full">${count}</span>
-                        </div>
-                    `).join('');
-                }
-
-                // Overdue Favorite (Threshold lowered to 2)
-                if(els.statOverdue) {
-                    const popularWords = sortedWords.filter(x => x[1] >= 2).map(x => x[0]);
-                    let oldestFav = { word: null, date: new Date() };
-                    popularWords.forEach(word => {
-                        const entries = dinners.filter(d => d.meal.toLowerCase().includes(word));
-                        entries.sort((a, b) => new Date(b.date) - new Date(a.date));
-                        const lastEaten = new Date(entries[0].date);
-                        if (lastEaten < oldestFav.date) oldestFav = { word: word, date: lastEaten };
-                    });
-
-                    if (oldestFav.word) {
-                        const daysAgo = Math.floor((new Date() - oldestFav.date) / (1000 * 60 * 60 * 24));
-                        els.statOverdue.innerHTML = `<span class="capitalize text-lg font-bold">${oldestFav.word}</span> <span class="text-sm opacity-75">(${daysAgo} days ago)</span>`;
-                    } else {
-                        els.statOverdue.textContent = "Need more data (2+ eats)";
-                    }
-                }
-
-                // Fastest Repeat
-                if(els.statFastestRepeat) {
-                    let minGap = Infinity;
-                    let fastMeal = null;
-                    const chronDinners = [...dinners].sort((a, b) => new Date(a.date) - new Date(b.date));
-                    for (let i = 0; i < chronDinners.length - 1; i++) {
-                        const d1 = chronDinners[i];
-                        for (let j = i + 1; j < chronDinners.length; j++) {
-                            const d2 = chronDinners[j];
-                            if (d1.meal.toLowerCase() === d2.meal.toLowerCase() && !d1.meal.toLowerCase().includes('leftover')) {
-                                const diffTime = Math.abs(new Date(d2.date) - new Date(d1.date));
-                                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                                if (diffDays > 0 && diffDays < minGap) {
-                                    minGap = diffDays;
-                                    fastMeal = d1.meal;
+                    // Word Analysis
+                    const stopWords = ['and', 'with', 'the', 'a', 'an', '&', 'of', 'in', 'on', 'w/', 'sauce', 'meal', 'dinner', 'lunch'];
+                    const wordCounts = {};
+                    dinners.forEach(d => {
+                        if(d.meal) {
+                            const words = d.meal.toLowerCase().split(/[\s,&]+/);
+                            words.forEach(w => {
+                                const clean = w.replace(/[^a-z0-9]/g, ''); 
+                                if (clean.length > 2 && !stopWords.includes(clean)) {
+                                    wordCounts[clean] = (wordCounts[clean] || 0) + 1;
                                 }
-                                break; 
+                            });
+                        }
+                    });
+
+                    const sortedWords = Object.entries(wordCounts).sort((a, b) => b[1] - a[1]);
+
+                    if(els.statWordCloud) {
+                        els.statWordCloud.innerHTML = sortedWords.map(([word, count]) => {
+                            let sizeClass = "text-xs px-3 py-1";
+                            if (count > 8) sizeClass = "text-xl px-5 py-3 font-bold";
+                            else if (count > 4) sizeClass = "text-base px-4 py-2 font-semibold";
+                            else if (count > 2) sizeClass = "text-sm px-3 py-1.5 font-medium";
+                            return `<button onclick="openWordStats('${word}')" class="${sizeClass} bg-slate-100 hover:bg-blue-100 text-slate-600 hover:text-blue-600 dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-300 dark:hover:text-white rounded-full transition-colors duration-200 capitalize shadow-sm border border-slate-200 dark:border-slate-600 mb-2">${word}</button>`;
+                        }).join('');
+                    }
+
+                    if(els.statTopMeals) {
+                        els.statTopMeals.innerHTML = sortedWords.slice(0, 5).map(([name, count], index) => `
+                            <div class="flex items-center justify-between p-2 border-b border-slate-100 dark:border-slate-700/50 last:border-0">
+                                <div class="flex items-center gap-3">
+                                    <span class="font-bold text-slate-400 w-4 text-center">${index + 1}</span>
+                                    <span class="font-medium text-slate-700 dark:text-slate-200 capitalize">${name}</span>
+                                </div>
+                                <span class="text-xs font-bold bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded-full">${count}</span>
+                            </div>
+                        `).join('');
+                    }
+
+                    // Overdue Favorite (Threshold lowered to 2)
+                    if(els.statOverdue) {
+                        const popularWords = sortedWords.filter(x => x[1] >= 2).map(x => x[0]);
+                        let oldestFav = { word: null, date: new Date() };
+                        popularWords.forEach(word => {
+                            const entries = dinners.filter(d => (d.meal || "").toLowerCase().includes(word));
+                            entries.sort((a, b) => new Date(b.date) - new Date(a.date));
+                            if(entries.length > 0 && entries[0].date) {
+                                const lastEaten = new Date(entries[0].date);
+                                if (lastEaten < oldestFav.date) oldestFav = { word: word, date: lastEaten };
                             }
-                            if (j > i + 10) break; 
+                        });
+
+                        if (oldestFav.word) {
+                            const daysAgo = Math.floor((new Date() - oldestFav.date) / (1000 * 60 * 60 * 24));
+                            els.statOverdue.innerHTML = `<span class="capitalize text-lg font-bold">${oldestFav.word}</span> <span class="text-sm opacity-75">(${daysAgo} days ago)</span>`;
+                        } else {
+                            els.statOverdue.textContent = "Need more data (2+ eats)";
                         }
                     }
-                    if (fastMeal) els.statFastestRepeat.innerHTML = `<span class="capitalize text-lg font-bold">${fastMeal}</span> <span class="text-sm opacity-75">(${minGap} days later)</span>`;
-                    else els.statFastestRepeat.textContent = "No repeats yet!";
+
+                    // Fastest Repeat - Now with loose matching
+                    if(els.statFastestRepeat) {
+                        let minGap = Infinity;
+                        let fastMeal = null;
+                        const chronDinners = [...dinners].sort((a, b) => new Date(a.date) - new Date(b.date));
+                        
+                        for (let i = 0; i < chronDinners.length - 1; i++) {
+                            const d1 = chronDinners[i];
+                            // Guard against missing meals
+                            const m1 = (d1.meal || "").toLowerCase().trim();
+                            
+                            for (let j = i + 1; j < chronDinners.length; j++) {
+                                const d2 = chronDinners[j];
+                                const m2 = (d2.meal || "").toLowerCase().trim();
+                                
+                                // Loose matching: If strings are very close or one contains other
+                                if (m1 && m2 && (m1 === m2 || (m1.length > 4 && m2.includes(m1))) && !m1.includes('leftover')) {
+                                    const diffTime = Math.abs(new Date(d2.date) - new Date(d1.date));
+                                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                                    if (diffDays > 0 && diffDays < minGap) {
+                                        minGap = diffDays;
+                                        fastMeal = d1.meal;
+                                    }
+                                    break; 
+                                }
+                                if (j > i + 10) break; 
+                            }
+                        }
+                        if (fastMeal) els.statFastestRepeat.innerHTML = `<span class="capitalize text-lg font-bold">${fastMeal}</span> <span class="text-sm opacity-75">(${minGap} days later)</span>`;
+                        else els.statFastestRepeat.textContent = "No repeats yet!";
+                    }
+                } catch(err) {
+                    console.error("Stats calculation error:", err);
+                    if(els.statOverdue) els.statOverdue.textContent = "Error calculating";
+                    if(els.statFastestRepeat) els.statFastestRepeat.textContent = "Error calculating";
                 }
             }
 
@@ -517,10 +540,10 @@
                 els.pickMealBtn.addEventListener('click', () => {
                     const thirtyDaysAgo = new Date();
                     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-                    const recentMeals = new Set(dinners.filter(d => new Date(d.date) > thirtyDaysAgo).map(d => d.meal.trim().toLowerCase()));
-                    const eligibleMeals = dinners.map(d => d.meal.trim()).filter(name => {
+                    const recentMeals = new Set(dinners.filter(d => new Date(d.date) > thirtyDaysAgo).map(d => (d.meal || "").trim().toLowerCase()));
+                    const eligibleMeals = dinners.map(d => (d.meal || "").trim()).filter(name => {
                         const lower = name.toLowerCase();
-                        return !recentMeals.has(lower) && !lower.includes('leftover');
+                        return !recentMeals.has(lower) && !lower.includes('leftover') && name.length > 2;
                     });
                     const uniqueEligible = [...new Set(eligibleMeals)];
                     if (els.pickerResult && els.pickerMealName) {
@@ -536,7 +559,7 @@
             }
 
             window.openWordStats = function(word) {
-                const matches = dinners.filter(d => d.meal.toLowerCase().includes(word.toLowerCase()));
+                const matches = dinners.filter(d => (d.meal || "").toLowerCase().includes(word.toLowerCase()));
                 if (matches.length === 0) return;
                 matches.sort((a, b) => new Date(b.date) - new Date(a.date));
 
