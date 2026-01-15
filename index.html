@@ -114,11 +114,11 @@
             <div id="dinnerList" class="space-y-4 pb-4"></div>
         </div>
 
-        <!-- VIEW 3: FOODS (RENAMED FROM CLOUD) -->
+        <!-- VIEW 3: CLOUD -->
         <div id="cloudView" class="hidden space-y-4">
             <div class="p-6 text-center space-y-2">
-                <h2 class="text-2xl font-bold text-slate-800 dark:text-slate-100">🍽️ Your Foods</h2>
-                <p class="text-slate-500 dark:text-slate-400 text-sm">Meals you eat often appear larger.</p>
+                <h2 class="text-2xl font-bold text-slate-800 dark:text-slate-100">☁️ The Food Cloud</h2>
+                <p class="text-slate-500 dark:text-slate-400 text-sm">Tap a bubble to see when you ate it.</p>
             </div>
             <div id="statWordCloud" class="p-4 flex flex-wrap gap-2 justify-center content-start">
                 <!-- Bubbles inserted here -->
@@ -156,7 +156,7 @@
             <!-- Fun Cards -->
             <div class="space-y-4">
                 
-                <!-- NEW: The Dinner Trifecta -->
+                <!-- The Dinner Trifecta -->
                 <div class="bg-teal-50 dark:bg-teal-900/20 p-5 rounded-2xl border border-teal-100 dark:border-teal-900/50 shadow-sm">
                     <div class="flex justify-between items-center mb-2">
                         <h3 class="font-bold text-teal-800 dark:text-teal-200">🤝 The Dinner Trifecta</h3>
@@ -168,7 +168,7 @@
                     </div>
                 </div>
 
-                <!-- NEW: Habit Hunter -->
+                <!-- Habit Hunter -->
                 <div class="bg-indigo-50 dark:bg-indigo-900/20 p-5 rounded-2xl border border-indigo-100 dark:border-indigo-900/50 shadow-sm">
                     <h3 class="font-bold text-indigo-800 dark:text-indigo-200 mb-1">📅 Habit Hunter</h3>
                     <div id="statDayTrend" class="font-medium text-slate-700 dark:text-slate-200 text-sm leading-relaxed">
@@ -249,7 +249,7 @@
     
     <!-- STATS DRILLDOWN MODAL -->
     <div id="wordStatsModal" class="modal">
-        <div class="modal-content bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-sm p-6 relative">
+        <div class="modal-content bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-md p-6 relative">
             <button id="closeWordModalBtn" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
@@ -373,7 +373,6 @@
                 statOverdue: safeGet('statOverdue'),
                 statFastestRepeat: safeGet('statFastestRepeat'),
                 statChaos: safeGet('statChaos'),
-                // New Stats Elements
                 statTrifectaPct: safeGet('statTrifectaPct'),
                 statTrifectaText: safeGet('statTrifectaText'),
                 statTrifectaBar: safeGet('statTrifectaBar'),
@@ -506,15 +505,10 @@
 
                     if(els.statWordCloud) {
                         els.statWordCloud.innerHTML = cloudPhrases.map(([word, count], index) => {
-                            // NEW: Tiered Sizing Logic
                             let sizeClass = "text-xs px-3 py-1";
-                            // Top 3 (Huge)
                             if (index < 3) sizeClass = "text-3xl px-6 py-3 font-extrabold shadow-md border-2 border-slate-300 dark:border-slate-500";
-                            // Rank 4-10 (Big)
                             else if (index < 10) sizeClass = "text-xl px-4 py-2 font-bold shadow-sm";
-                            // Rank 11-20 (Medium)
                             else if (index < 20) sizeClass = "text-base px-3 py-1.5 font-semibold";
-                            // The rest (Small)
                             else sizeClass = "text-xs px-2 py-1 font-medium opacity-80";
 
                             return `<button onclick="openWordStats('${word}')" class="${sizeClass} bg-slate-100 hover:bg-blue-100 text-slate-600 hover:text-blue-600 dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-300 dark:hover:text-white rounded-full transition-all duration-200 capitalize border border-slate-200 dark:border-slate-600 mb-2">${word}</button>`;
@@ -533,19 +527,14 @@
                         `).join('');
                     }
 
-                    // --- NEW: THE DINNER TRIFECTA (UNITY SCORE) ---
+                    // The Dinner Trifecta
                     if(els.statTrifectaPct && els.statTrifectaText && els.statTrifectaBar) {
                         const uniqueDates = new Set(dinners.map(d => d.date.split('T')[0]));
                         const totalUniqueNights = uniqueDates.size;
                         let trifectaCount = 0;
 
                         uniqueDates.forEach(dateStr => {
-                            // Find all entries for this specific date
                             const nightEntries = dinners.filter(d => d.date.split('T')[0] === dateStr);
-                            
-                            // Trifecta criteria: 
-                            // 1. Exactly 1 entry for the night (everyone ate same thing)
-                            // 2. That entry has tags 'Mom', 'Dad', 'Chad'
                             if (nightEntries.length === 1) {
                                 const entry = nightEntries[0];
                                 const tags = entry.tags || [];
@@ -564,17 +553,14 @@
                         els.statTrifectaBar.style.width = `${trifectaPct}%`;
                     }
 
-                    // --- NEW: HABIT HUNTER (DAY TRENDS) ---
+                    // Habit Hunter
                     if(els.statDayTrend) {
-                        // Map Day Index (0-6) to Meal Phrases
                         const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-                        const dayHabits = [{}, {}, {}, {}, {}, {}, {}]; // Array of 7 objects
+                        const dayHabits = [{}, {}, {}, {}, {}, {}, {}];
 
                         dinners.forEach(d => {
                             const date = new Date(d.date);
-                            const dayIndex = date.getUTCDay(); // 0 = Sunday
-                            
-                            // Check against our smart phrases list
+                            const dayIndex = date.getUTCDay();
                             finalPhrases.forEach(([phrase, _]) => {
                                 if ((d.meal || "").toLowerCase().includes(phrase)) {
                                     dayHabits[dayIndex][phrase] = (dayHabits[dayIndex][phrase] || 0) + 1;
@@ -582,17 +568,12 @@
                             });
                         });
 
-                        // Find the strongest habit
                         let topHabit = { day: null, meal: null, count: 0 };
-
                         days.forEach((dayName, index) => {
                             const habits = dayHabits[index];
                             if(Object.keys(habits).length > 0) {
-                                // Find top meal for this day
                                 const sorted = Object.entries(habits).sort((a,b) => b[1] - a[1]);
                                 const [meal, count] = sorted[0];
-                                
-                                // Is this the strongest habit we've seen so far?
                                 if (count > topHabit.count) {
                                     topHabit = { day: dayName, meal: meal, count: count };
                                 }
@@ -632,7 +613,7 @@
                         }
                     }
 
-                    // Fastest Repeat - Now with loose matching
+                    // Fastest Repeat
                     if(els.statFastestRepeat) {
                         let minGap = Infinity;
                         let fastMeal = null;
@@ -715,7 +696,26 @@
                 if(els.wsHistoryList) {
                     els.wsHistoryList.innerHTML = matches.map(m => {
                         const d = new Date(m.date);
-                        return `<div class="flex justify-between border-b border-slate-100 dark:border-slate-700/50 py-1 last:border-0"><span>${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span><span class="text-slate-400 text-xs truncate max-w-[150px]">${m.meal}</span></div>`
+                        
+                        // NEW: Generate Tags
+                        const tagsHtml = (m.tags || []).map(t => {
+                             let c = 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400';
+                             if(t==='Chad') c='bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300';
+                             if(t==='Mom') c='bg-pink-100 text-pink-600 dark:bg-pink-900/40 dark:text-pink-300';
+                             if(t==='Dad') c='bg-green-100 text-green-600 dark:bg-green-900/40 dark:text-green-300';
+                             return `<span class="text-[10px] px-1.5 py-0.5 rounded font-bold ${c}">${t}</span>`;
+                        }).join('');
+
+                        return `
+                        <div class="border-b border-slate-100 dark:border-slate-700/50 py-2 last:border-0">
+                            <div class="flex justify-between items-start">
+                                <span class="text-xs text-slate-400 mt-0.5 shrink-0 w-20">${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                                <span class="text-sm text-slate-700 dark:text-slate-200 font-medium text-right flex-1 break-words ml-2">${m.meal}</span>
+                            </div>
+                            <div class="flex justify-end gap-1 mt-1">
+                                ${tagsHtml}
+                            </div>
+                        </div>`
                     }).join('');
                 }
                 if(els.wordStatsModal) els.wordStatsModal.style.display = 'flex';
@@ -769,7 +769,7 @@
                             if(t==='Chad') c='bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300';
                             if(t==='Mom') c='bg-pink-100 text-pink-700 dark:bg-pink-900/40 dark:text-pink-300';
                             if(t==='Dad') c='bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300';
-                            return `<span class="text-xs ${c} px-2 py-1 rounded-full">${t}</span>`;
+                            return `<span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${c}">${t}</span>`;
                         }).join(' ');
                         item.innerHTML = `
                             <div class="flex items-center flex-grow min-w-0">
