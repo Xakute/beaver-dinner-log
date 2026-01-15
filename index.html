@@ -155,6 +155,27 @@
 
             <!-- Fun Cards -->
             <div class="space-y-4">
+                
+                <!-- NEW: The Dinner Trifecta -->
+                <div class="bg-teal-50 dark:bg-teal-900/20 p-5 rounded-2xl border border-teal-100 dark:border-teal-900/50 shadow-sm">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="font-bold text-teal-800 dark:text-teal-200">🤝 The Dinner Trifecta</h3>
+                        <span class="text-2xl font-bold text-teal-700 dark:text-teal-300" id="statTrifectaPct">0%</span>
+                    </div>
+                    <p class="text-xs text-teal-600 dark:text-teal-400 mb-2" id="statTrifectaText">Calculating...</p>
+                    <div class="w-full bg-teal-200 dark:bg-teal-800 rounded-full h-2">
+                        <div id="statTrifectaBar" class="bg-teal-500 h-2 rounded-full" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- NEW: Habit Hunter -->
+                <div class="bg-indigo-50 dark:bg-indigo-900/20 p-5 rounded-2xl border border-indigo-100 dark:border-indigo-900/50 shadow-sm">
+                    <h3 class="font-bold text-indigo-800 dark:text-indigo-200 mb-1">📅 Habit Hunter</h3>
+                    <div id="statDayTrend" class="font-medium text-slate-700 dark:text-slate-200 text-sm leading-relaxed">
+                        Calculating patterns...
+                    </div>
+                </div>
+
                 <!-- Top 5 Ingredients -->
                 <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
                     <h3 class="font-bold text-slate-700 dark:text-slate-200 mb-3">🏆 Top 5 Foods</h3>
@@ -301,7 +322,6 @@
             const auth = getAuth(app);
             const dbCollectionPath = `dinners/all/entries`;
 
-            // Helper to safe-select elements (fixes "Config Error" on missing DOM)
             const safeGet = (id) => {
                 const el = document.getElementById(id);
                 if (!el) console.warn(`Element #${id} not found in DOM`);
@@ -352,6 +372,12 @@
                 statOverdue: safeGet('statOverdue'),
                 statFastestRepeat: safeGet('statFastestRepeat'),
                 statChaos: safeGet('statChaos'),
+                // New Stats Elements
+                statTrifectaPct: safeGet('statTrifectaPct'),
+                statTrifectaText: safeGet('statTrifectaText'),
+                statTrifectaBar: safeGet('statTrifectaBar'),
+                statDayTrend: safeGet('statDayTrend'),
+
                 pickMealBtn: safeGet('pickMealBtn'),
                 pickerResult: safeGet('pickerResult'),
                 pickerMealName: safeGet('pickerMealName'),
@@ -444,18 +470,13 @@
 
                     dinners.forEach(d => {
                         if(d.meal) {
-                            // 1. Clean and tokenize
                             const raw = d.meal.toLowerCase().replace(/[^a-z0-9\s]/g, '');
-                            const tokens = raw.split(/\s+/).filter(t => t.length > 2); // Ignore tiny words
+                            const tokens = raw.split(/\s+/).filter(t => t.length > 2); 
 
-                            // 2. Count Unigrams (Single Words)
                             tokens.forEach(t => {
-                                if(!stopWords.includes(t)) {
-                                    phraseCounts[t] = (phraseCounts[t] || 0) + 1;
-                                }
+                                if(!stopWords.includes(t)) phraseCounts[t] = (phraseCounts[t] || 0) + 1;
                             });
 
-                            // 3. Count Bigrams (Pairs) e.g. "bob evans"
                             for(let i=0; i < tokens.length - 1; i++) {
                                 const bigram = tokens[i] + ' ' + tokens[i+1];
                                 if(!stopWords.includes(tokens[i]) && !stopWords.includes(tokens[i+1])) {
@@ -463,7 +484,6 @@
                                 }
                             }
                             
-                            // 4. Count Trigrams (Trios) e.g. "mac and cheese" - Allow stopwords in middle!
                             for(let i=0; i < tokens.length - 2; i++) {
                                 const trigram = tokens[i] + ' ' + tokens[i+1] + ' ' + tokens[i+2];
                                 phraseCounts[trigram] = (phraseCounts[trigram] || 0) + 1;
@@ -471,10 +491,8 @@
                         }
                     });
 
-                    // 5. DEDUPLICATION LOGIC
+                    // DEDUPLICATION
                     let finalPhrases = Object.entries(phraseCounts).sort((a,b) => b[1] - a[1]);
-                    
-                    // Filter out subsets
                     finalPhrases = finalPhrases.filter(([phrase, count]) => {
                         const isSubset = finalPhrases.some(([otherPhrase, otherCount]) => {
                             return otherPhrase !== phrase && otherPhrase.includes(phrase) && otherCount >= count;
@@ -504,9 +522,81 @@
                         `).join('');
                     }
 
-                    // --- NEW DYNAMIC OVERDUE LOGIC (SHUFFLE) ---
+                    // --- NEW: THE DINNER TRIFECTA (UNITY SCORE) ---
+                    if(els.statTrifectaPct && els.statTrifectaText && els.statTrifectaBar) {
+                        const uniqueDates = new Set(dinners.map(d => d.date.split('T')[0]));
+                        const totalUniqueNights = uniqueDates.size;
+                        let trifectaCount = 0;
+
+                        uniqueDates.forEach(dateStr => {
+                            // Find all entries for this specific date
+                            const nightEntries = dinners.filter(d => d.date.split('T')[0] === dateStr);
+                            
+                            // Trifecta criteria: 
+                            // 1. Exactly 1 entry for the night (everyone ate same thing)
+                            // 2. That entry has tags 'Mom', 'Dad', 'Chad'
+                            if (nightEntries.length === 1) {
+                                const entry = nightEntries[0];
+                                const tags = entry.tags || [];
+                                const hasMom = tags.includes('Mom');
+                                const hasDad = tags.includes('Dad');
+                                const hasChad = tags.includes('Chad');
+                                if (hasMom && hasDad && hasChad) {
+                                    trifectaCount++;
+                                }
+                            }
+                        });
+
+                        const trifectaPct = totalUniqueNights > 0 ? Math.round((trifectaCount / totalUniqueNights) * 100) : 0;
+                        els.statTrifectaPct.textContent = `${trifectaPct}%`;
+                        els.statTrifectaText.textContent = `${trifectaCount} out of ${totalUniqueNights} nights`;
+                        els.statTrifectaBar.style.width = `${trifectaPct}%`;
+                    }
+
+                    // --- NEW: HABIT HUNTER (DAY TRENDS) ---
+                    if(els.statDayTrend) {
+                        // Map Day Index (0-6) to Meal Phrases
+                        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                        const dayHabits = [{}, {}, {}, {}, {}, {}, {}]; // Array of 7 objects
+
+                        dinners.forEach(d => {
+                            const date = new Date(d.date);
+                            const dayIndex = date.getUTCDay(); // 0 = Sunday
+                            
+                            // Check against our smart phrases list
+                            finalPhrases.forEach(([phrase, _]) => {
+                                if ((d.meal || "").toLowerCase().includes(phrase)) {
+                                    dayHabits[dayIndex][phrase] = (dayHabits[dayIndex][phrase] || 0) + 1;
+                                }
+                            });
+                        });
+
+                        // Find the strongest habit
+                        let topHabit = { day: null, meal: null, count: 0 };
+
+                        days.forEach((dayName, index) => {
+                            const habits = dayHabits[index];
+                            if(Object.keys(habits).length > 0) {
+                                // Find top meal for this day
+                                const sorted = Object.entries(habits).sort((a,b) => b[1] - a[1]);
+                                const [meal, count] = sorted[0];
+                                
+                                // Is this the strongest habit we've seen so far?
+                                if (count > topHabit.count) {
+                                    topHabit = { day: dayName, meal: meal, count: count };
+                                }
+                            }
+                        });
+
+                        if (topHabit.day && topHabit.count > 1) {
+                            els.statDayTrend.innerHTML = `On <strong class="text-indigo-600 dark:text-indigo-400">${topHabit.day}s</strong>, you usually eat <strong class="capitalize">${topHabit.meal}</strong>.`;
+                        } else {
+                            els.statDayTrend.textContent = "No strong weekly patterns found yet.";
+                        }
+                    }
+
+                    // Overdue Favorite (Dynamic)
                     if(els.statOverdue) {
-                        // 1. Get Top Candidates (Popular things not eaten recently)
                         const popularPhrases = finalPhrases.filter(x => x[1] >= 2).map(x => x[0]);
                         let overdueCandidates = [];
                         
@@ -516,28 +606,22 @@
                             if(entries.length > 0 && entries[0].date) {
                                 const lastEaten = new Date(entries[0].date);
                                 const daysAgo = Math.floor((new Date() - lastEaten) / (1000 * 60 * 60 * 24));
-                                // Consider it "Overdue" if eaten more than 14 days ago
-                                if (daysAgo > 14) {
-                                    overdueCandidates.push({ word: word, daysAgo: daysAgo });
-                                }
+                                if (daysAgo > 14) overdueCandidates.push({ word: word, daysAgo: daysAgo });
                             }
                         });
 
-                        // 2. Sort by "Most Overdue" to find the biggest gaps
                         overdueCandidates.sort((a, b) => b.daysAgo - a.daysAgo);
 
-                        // 3. Pick randomly from the top 5 overdue items to show variety
                         if (overdueCandidates.length > 0) {
-                            const topX = overdueCandidates.slice(0, 5); // Take top 5 candidates
-                            const randomPick = topX[Math.floor(Math.random() * topX.length)]; // Randomize
-                            
+                            const topX = overdueCandidates.slice(0, 5); 
+                            const randomPick = topX[Math.floor(Math.random() * topX.length)];
                             els.statOverdue.innerHTML = `<span class="capitalize text-lg font-bold">${randomPick.word}</span> <span class="text-sm opacity-75">(${randomPick.daysAgo} days ago)</span>`;
                         } else {
                             els.statOverdue.textContent = "Log more meals (nothing overdue yet!)";
                         }
                     }
 
-                    // Fastest Repeat - Now with loose matching
+                    // Fastest Repeat
                     if(els.statFastestRepeat) {
                         let minGap = Infinity;
                         let fastMeal = null;
