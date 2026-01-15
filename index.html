@@ -114,7 +114,7 @@
             <div id="dinnerList" class="space-y-4 pb-4"></div>
         </div>
 
-        <!-- VIEW 3: CLOUD (NEW) -->
+        <!-- VIEW 3: CLOUD -->
         <div id="cloudView" class="hidden space-y-4">
             <div class="p-6 text-center space-y-2">
                 <h2 class="text-2xl font-bold text-slate-800 dark:text-slate-100">☁️ The Food Cloud</h2>
@@ -125,7 +125,7 @@
             </div>
         </div>
 
-        <!-- VIEW 4: STATS (FUN & ANALYTICS) -->
+        <!-- VIEW 4: STATS -->
         <div id="statsView" class="hidden space-y-5">
             
             <!-- The Meal Picker -->
@@ -189,19 +189,19 @@
 
     <!-- BOTTOM NAVIGATION BAR -->
     <div class="fixed bottom-0 left-0 w-full bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex justify-around items-center py-3 px-2 z-40 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
-        <button id="navLogBtn" class="nav-btn flex flex-col items-center justify-center w-1/4 text-blue-600 dark:text-blue-400 transition-colors" data-target="log">
+        <button id="navLogBtn" class="nav-btn flex flex-col items-center justify-center w-1/4 text-blue-600 dark:text-blue-400 transition-colors" onclick="switchTab('log')">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
             <span class="text-[10px] font-bold uppercase">Log</span>
         </button>
-        <button id="navHistoryBtn" class="nav-btn flex flex-col items-center justify-center w-1/4 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors" data-target="history">
+        <button id="navHistoryBtn" class="nav-btn flex flex-col items-center justify-center w-1/4 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors" onclick="switchTab('history')">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             <span class="text-[10px] font-bold uppercase">History</span>
         </button>
-        <button id="navCloudBtn" class="nav-btn flex flex-col items-center justify-center w-1/4 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors" data-target="cloud">
+        <button id="navCloudBtn" class="nav-btn flex flex-col items-center justify-center w-1/4 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors" onclick="switchTab('cloud')">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" /></svg>
             <span class="text-[10px] font-bold uppercase">Cloud</span>
         </button>
-        <button id="navStatsBtn" class="nav-btn flex flex-col items-center justify-center w-1/4 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors" data-target="stats">
+        <button id="navStatsBtn" class="nav-btn flex flex-col items-center justify-center w-1/4 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors" onclick="switchTab('stats')">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
             <span class="text-[10px] font-bold uppercase">Stats</span>
         </button>
@@ -301,16 +301,18 @@
             const auth = getAuth(app);
             const dbCollectionPath = `dinners/all/entries`;
 
+            // FLATTENED ELS OBJECT (Fixes the "Edit" Bug)
             const els = {
                 loading: document.getElementById('loadingOverlay'),
-                // Views
-                views: {
-                    log: document.getElementById('logView'),
-                    history: document.getElementById('historyView'),
-                    cloud: document.getElementById('cloudView'),
-                    stats: document.getElementById('statsView'),
-                },
-                navBtns: document.querySelectorAll('.nav-btn'),
+                logView: document.getElementById('logView'),
+                historyView: document.getElementById('historyView'),
+                cloudView: document.getElementById('cloudView'),
+                statsView: document.getElementById('statsView'),
+                
+                navLogBtn: document.getElementById('navLogBtn'),
+                navHistoryBtn: document.getElementById('navHistoryBtn'),
+                navCloudBtn: document.getElementById('navCloudBtn'),
+                navStatsBtn: document.getElementById('navStatsBtn'),
                 
                 mealInput: document.getElementById('mealInput'),
                 dateInput: document.getElementById('dateInput'),
@@ -319,21 +321,24 @@
                 dinnerList: document.getElementById('dinnerList'),
                 userIdDisplay: document.getElementById('userIdDisplay'),
                 tagButtons: document.querySelectorAll('.tag-btn'),
+                
                 dinnerModal: document.getElementById('dinnerModal'),
                 closeModalBtn: document.getElementById('closeModalBtn'),
                 modalImage: document.getElementById('modalImage'),
                 modalMeal: document.getElementById('modalMeal'),
                 modalDate: document.getElementById('modalDate'),
                 modalTags: document.getElementById('modalTags'),
+                
                 deleteModal: document.getElementById('deleteConfirmModal'),
                 cancelDelete: document.getElementById('cancelDeleteBtn'),
                 confirmDelete: document.getElementById('confirmDeleteBtn'),
                 deleteMealName: document.getElementById('deleteMealName'),
+                
                 photoUpload: document.getElementById('photoUpload'),
                 uploadBtn: document.getElementById('uploadTriggerButton'),
                 imagePreview: document.getElementById('imagePreview'),
                 uploadStatus: document.getElementById('uploadStatus'),
-                // Stats
+                
                 statTotalCount: document.getElementById('statTotalCount'),
                 statLeftovers: document.getElementById('statLeftovers'),
                 statWordCloud: document.getElementById('statWordCloud'),
@@ -344,7 +349,7 @@
                 pickMealBtn: document.getElementById('pickMealBtn'),
                 pickerResult: document.getElementById('pickerResult'),
                 pickerMealName: document.getElementById('pickerMealName'),
-                // Word Stats
+                
                 wordStatsModal: document.getElementById('wordStatsModal'),
                 closeWordModalBtn: document.getElementById('closeWordModalBtn'),
                 wsWord: document.getElementById('wsWord'),
@@ -363,27 +368,35 @@
             let fileToUpload = null;
             let docIdToDelete = null;
 
-            // --- TAB SWITCHING LOGIC ---
-            els.navBtns.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const target = btn.dataset.target;
-                    
-                    // Hide all views
-                    Object.values(els.views).forEach(el => el.classList.add('hidden'));
-                    // Show target
-                    els.views[target].classList.remove('hidden');
-                    
-                    // Update buttons
-                    els.navBtns.forEach(b => {
-                        b.classList.remove('text-blue-600', 'dark:text-blue-400');
-                        b.classList.add('text-slate-400', 'dark:text-slate-500');
-                    });
-                    btn.classList.add('text-blue-600', 'dark:text-blue-400');
-                    btn.classList.remove('text-slate-400', 'dark:text-slate-500');
-
-                    if(target === 'stats' || target === 'cloud') calculateStats();
+            // GLOBAL TAB SWITCHER (Made global so openEdit can access it)
+            window.switchTab = function(tab) {
+                [els.logView, els.historyView, els.cloudView, els.statsView].forEach(el => el.classList.add('hidden'));
+                
+                [els.navLogBtn, els.navHistoryBtn, els.navCloudBtn, els.navStatsBtn].forEach(btn => {
+                    btn.classList.remove('text-blue-600', 'dark:text-blue-400');
+                    btn.classList.add('text-slate-400', 'dark:text-slate-500');
                 });
-            });
+
+                if (tab === 'log') {
+                    els.logView.classList.remove('hidden');
+                    els.navLogBtn.classList.add('text-blue-600', 'dark:text-blue-400');
+                    els.navLogBtn.classList.remove('text-slate-400', 'dark:text-slate-500');
+                } else if (tab === 'history') {
+                    els.historyView.classList.remove('hidden');
+                    els.navHistoryBtn.classList.add('text-blue-600', 'dark:text-blue-400');
+                    els.navHistoryBtn.classList.remove('text-slate-400', 'dark:text-slate-500');
+                } else if (tab === 'cloud') {
+                    els.cloudView.classList.remove('hidden');
+                    els.navCloudBtn.classList.add('text-blue-600', 'dark:text-blue-400');
+                    els.navCloudBtn.classList.remove('text-slate-400', 'dark:text-slate-500');
+                    calculateStats();
+                } else if (tab === 'stats') {
+                    els.statsView.classList.remove('hidden');
+                    els.navStatsBtn.classList.add('text-blue-600', 'dark:text-blue-400');
+                    els.navStatsBtn.classList.remove('text-slate-400', 'dark:text-slate-500');
+                    calculateStats();
+                }
+            };
 
             // --- STATS ENGINE ---
             function calculateStats() {
@@ -396,7 +409,7 @@
                 const leftoverCount = dinners.filter(d => d.meal.toLowerCase().includes('leftover')).length;
                 els.statLeftovers.textContent = leftoverCount;
 
-                // 3. Chaos Nights (Dates with > 1 entry)
+                // 3. Chaos Nights
                 const dateCounts = {};
                 dinners.forEach(d => {
                     const date = d.date.split('T')[0];
@@ -405,7 +418,7 @@
                 const chaosCount = Object.values(dateCounts).filter(c => c > 1).length;
                 els.statChaos.textContent = chaosCount;
 
-                // 4. Word Analysis (Ingredients)
+                // 4. Word Analysis
                 const stopWords = ['and', 'with', 'the', 'a', 'an', '&', 'of', 'in', 'on', 'w/', 'sauce', 'meal', 'dinner', 'lunch'];
                 const wordCounts = {};
                 
@@ -419,7 +432,6 @@
                     });
                 });
 
-                // Sort Words
                 const sortedWords = Object.entries(wordCounts).sort((a, b) => b[1] - a[1]);
 
                 // Render Cloud
@@ -431,7 +443,7 @@
                     return `<button onclick="openWordStats('${word}')" class="${sizeClass} bg-slate-100 hover:bg-blue-100 text-slate-600 hover:text-blue-600 dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-300 dark:hover:text-white rounded-full transition-colors duration-200 capitalize shadow-sm border border-slate-200 dark:border-slate-600 mb-2">${word}</button>`;
                 }).join('');
 
-                // Render Top 5 Foods
+                // Render Top 5
                 els.statTopMeals.innerHTML = sortedWords.slice(0, 5).map(([name, count], index) => `
                     <div class="flex items-center justify-between p-2 border-b border-slate-100 dark:border-slate-700/50 last:border-0">
                         <div class="flex items-center gap-3">
@@ -442,16 +454,14 @@
                     </div>
                 `).join('');
 
-                // 5. Most Overdue Favorite (Must have eaten at least 3 times)
+                // 5. Most Overdue Favorite
                 const popularWords = sortedWords.filter(x => x[1] >= 3).map(x => x[0]);
-                let oldestFav = { word: null, date: new Date() }; // Start with "today"
+                let oldestFav = { word: null, date: new Date() };
                 
                 popularWords.forEach(word => {
-                    // Find most recent entry for this word
                     const entries = dinners.filter(d => d.meal.toLowerCase().includes(word));
                     entries.sort((a, b) => new Date(b.date) - new Date(a.date));
                     const lastEaten = new Date(entries[0].date);
-                    
                     if (lastEaten < oldestFav.date) {
                         oldestFav = { word: word, date: lastEaten };
                     }
@@ -461,32 +471,27 @@
                     const daysAgo = Math.floor((new Date() - oldestFav.date) / (1000 * 60 * 60 * 24));
                     els.statOverdue.innerHTML = `<span class="capitalize text-lg font-bold">${oldestFav.word}</span> <span class="text-sm opacity-75">(${daysAgo} days ago)</span>`;
                 } else {
-                    els.statOverdue.textContent = "Log more meals to see this!";
+                    els.statOverdue.textContent = "Need more data (3+ eats)";
                 }
 
                 // 6. Fastest Repeat
-                // We need to look for meals with similar names eaten close together
                 let minGap = Infinity;
                 let fastMeal = null;
-                
-                // Sort dinners by date ascending
                 const chronDinners = [...dinners].sort((a, b) => new Date(a.date) - new Date(b.date));
                 
                 for (let i = 0; i < chronDinners.length - 1; i++) {
                     const d1 = chronDinners[i];
                     for (let j = i + 1; j < chronDinners.length; j++) {
                         const d2 = chronDinners[j];
-                        // If meals are basically the same string (ignoring case)
-                        if (d1.meal.toLowerCase() === d2.meal.toLowerCase() && d1.meal.toLowerCase() !== 'leftovers') {
+                        if (d1.meal.toLowerCase() === d2.meal.toLowerCase() && !d1.meal.toLowerCase().includes('leftover')) {
                             const diffTime = Math.abs(new Date(d2.date) - new Date(d1.date));
                             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                             if (diffDays > 0 && diffDays < minGap) {
                                 minGap = diffDays;
                                 fastMeal = d1.meal;
                             }
-                            break; // Found next instance, break inner loop
+                            break; 
                         }
-                        // Stop checking if gap is already huge
                         if (j > i + 10) break; 
                     }
                 }
@@ -500,7 +505,6 @@
 
             // --- MEAL PICKER LOGIC ---
             els.pickMealBtn.addEventListener('click', () => {
-                // 1. Get meals not eaten in last 30 days
                 const thirtyDaysAgo = new Date();
                 thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
                 
@@ -516,7 +520,6 @@
                         return !recentMeals.has(lower) && !lower.includes('leftover');
                     });
                 
-                // FIXED TYPO HERE:
                 const uniqueEligible = [...new Set(eligibleMeals)];
 
                 if (uniqueEligible.length > 0) {
@@ -529,7 +532,7 @@
                 }
             });
 
-            // Re-implement onclick globally
+            // Global Functions
             window.openWordStats = function(word) {
                 const matches = dinners.filter(d => d.meal.toLowerCase().includes(word.toLowerCase()));
                 if (matches.length === 0) return;
@@ -605,7 +608,7 @@
                             if(t==='Chad') c='bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300';
                             if(t==='Mom') c='bg-pink-100 text-pink-700 dark:bg-pink-900/40 dark:text-pink-300';
                             if(t==='Dad') c='bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300';
-                            return `<span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${c}">${t}</span>`;
+                            return `<span class="text-xs ${c} px-2 py-1 rounded-full">${t}</span>`;
                         }).join(' ');
                         item.innerHTML = `
                             <div class="flex items-center flex-grow min-w-0">
@@ -654,45 +657,6 @@
                 els.uploadStatus.textContent = '';
             }
 
-            async function handleAdd() {
-                const meal = els.mealInput.value.trim();
-                if (!isAuthenticated) return toast('App not connected.', 'error');
-                if (!meal) return toast('Please enter a meal.', 'error');
-                
-                let img = editingDocId ? dinners.find(d => d.id === editingDocId)?.imageUrl : null;
-                if (fileToUpload) {
-                    els.uploadStatus.textContent = 'Uploading...';
-                    els.addButton.disabled = true;
-                    try {
-                        const fd = new FormData(); fd.append('file', fileToUpload); fd.append('upload_preset', cloudinaryUploadPreset);
-                        const res = await fetch(cloudinaryUrl, { method: 'POST', body: fd });
-                        if(!res.ok) throw new Error();
-                        const data = await res.json();
-                        img = data.secure_url;
-                    } catch(e) {
-                        toast('Photo upload failed', 'error');
-                        els.addButton.disabled = false;
-                        return; 
-                    }
-                }
-
-                const dStr = els.dateInput.value;
-                const date = dStr ? new Date(`${dStr}T00:00:00Z`) : new Date();
-                date.setUTCHours(0,0,0,0);
-                
-                const entry = { meal, date: date.toISOString(), tags: selectedTags, imageUrl: img, authorId: userId };
-                
-                try {
-                    if(editingDocId) await setDoc(doc(db, dbCollectionPath, editingDocId), entry);
-                    else await addDoc(collection(db, dbCollectionPath), entry);
-                    
-                    toast(editingDocId ? 'Updated!' : 'Saved!');
-                    resetForm();
-                    els.addButton.disabled = false;
-                    els.uploadStatus.textContent = '';
-                } catch(e) { console.error(e); toast('Error saving.', 'error'); els.addButton.disabled = false; }
-            }
-
             function openDelete(id) {
                 const entry = dinners.find(d => d.id === id);
                 if(!entry) return;
@@ -713,13 +677,22 @@
                 if(!entry) return;
                 resetForm();
                 els.mealInput.value = entry.meal;
-                els.dateInput.value = new Date(entry.date).toISOString().split('T')[0];
+                
+                // DATE FIX: Use Local Time for Edit (keeps it on the correct day)
+                const d = new Date(entry.date);
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                els.dateInput.value = `${year}-${month}-${day}`;
+
                 selectedTags = entry.tags || [];
                 editingDocId = id;
                 els.addButton.textContent = 'Update Entry';
                 if(entry.imageUrl) { els.imagePreview.src = entry.imageUrl; els.uploadStatus.textContent = "Current photo"; }
                 els.tagButtons.forEach(btn => applyTagStyles(btn, selectedTags.includes(btn.dataset.tag)));
-                switchTab('log'); 
+                
+                // Use the Global switchTab (now accessible)
+                window.switchTab('log'); 
                 window.scrollTo({top:0, behavior:'smooth'});
             }
 
