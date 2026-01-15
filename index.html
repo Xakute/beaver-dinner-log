@@ -301,63 +301,69 @@
             const auth = getAuth(app);
             const dbCollectionPath = `dinners/all/entries`;
 
-            // FLATTENED ELS OBJECT (Fixes the "Edit" Bug)
+            // Helper to safe-select elements (fixes "Config Error" on missing DOM)
+            const safeGet = (id) => {
+                const el = document.getElementById(id);
+                if (!el) console.warn(`Element #${id} not found in DOM`);
+                return el;
+            };
+
             const els = {
-                loading: document.getElementById('loadingOverlay'),
-                logView: document.getElementById('logView'),
-                historyView: document.getElementById('historyView'),
-                cloudView: document.getElementById('cloudView'),
-                statsView: document.getElementById('statsView'),
+                loading: safeGet('loadingOverlay'),
+                logView: safeGet('logView'),
+                historyView: safeGet('historyView'),
+                cloudView: safeGet('cloudView'),
+                statsView: safeGet('statsView'),
                 
-                navLogBtn: document.getElementById('navLogBtn'),
-                navHistoryBtn: document.getElementById('navHistoryBtn'),
-                navCloudBtn: document.getElementById('navCloudBtn'),
-                navStatsBtn: document.getElementById('navStatsBtn'),
+                navLogBtn: safeGet('navLogBtn'),
+                navHistoryBtn: safeGet('navHistoryBtn'),
+                navCloudBtn: safeGet('navCloudBtn'),
+                navStatsBtn: safeGet('navStatsBtn'),
                 
-                mealInput: document.getElementById('mealInput'),
-                dateInput: document.getElementById('dateInput'),
-                addButton: document.getElementById('addButton'),
-                searchInput: document.getElementById('searchInput'),
-                dinnerList: document.getElementById('dinnerList'),
-                userIdDisplay: document.getElementById('userIdDisplay'),
+                mealInput: safeGet('mealInput'),
+                dateInput: safeGet('dateInput'),
+                addButton: safeGet('addButton'),
+                searchInput: safeGet('searchInput'),
+                dinnerList: safeGet('dinnerList'),
+                userIdDisplay: safeGet('userIdDisplay'),
                 tagButtons: document.querySelectorAll('.tag-btn'),
                 
-                dinnerModal: document.getElementById('dinnerModal'),
-                closeModalBtn: document.getElementById('closeModalBtn'),
-                modalImage: document.getElementById('modalImage'),
-                modalMeal: document.getElementById('modalMeal'),
-                modalDate: document.getElementById('modalDate'),
-                modalTags: document.getElementById('modalTags'),
+                dinnerModal: safeGet('dinnerModal'),
+                closeModalBtn: safeGet('closeModalBtn'),
+                modalImage: safeGet('modalImage'),
+                modalMeal: safeGet('modalMeal'),
+                modalDate: safeGet('modalDate'),
+                modalTags: safeGet('modalTags'),
                 
-                deleteModal: document.getElementById('deleteConfirmModal'),
-                cancelDelete: document.getElementById('cancelDeleteBtn'),
-                confirmDelete: document.getElementById('confirmDeleteBtn'),
-                deleteMealName: document.getElementById('deleteMealName'),
+                deleteModal: safeGet('deleteConfirmModal'),
+                cancelDelete: safeGet('cancelDeleteBtn'),
+                confirmDelete: safeGet('confirmDeleteBtn'),
+                deleteMealName: safeGet('deleteMealName'),
                 
-                photoUpload: document.getElementById('photoUpload'),
-                uploadBtn: document.getElementById('uploadTriggerButton'),
-                imagePreview: document.getElementById('imagePreview'),
-                uploadStatus: document.getElementById('uploadStatus'),
+                photoUpload: safeGet('photoUpload'),
+                uploadBtn: safeGet('uploadTriggerButton'),
+                imagePreview: safeGet('imagePreview'),
+                uploadStatus: safeGet('uploadStatus'),
                 
-                statTotalCount: document.getElementById('statTotalCount'),
-                statLeftovers: document.getElementById('statLeftovers'),
-                statWordCloud: document.getElementById('statWordCloud'),
-                statTopMeals: document.getElementById('statTopMeals'),
-                statOverdue: document.getElementById('statOverdue'),
-                statFastestRepeat: document.getElementById('statFastestRepeat'),
-                statChaos: document.getElementById('statChaos'),
-                pickMealBtn: document.getElementById('pickMealBtn'),
-                pickerResult: document.getElementById('pickerResult'),
-                pickerMealName: document.getElementById('pickerMealName'),
+                statTotalCount: safeGet('statTotalCount'),
+                statLeftovers: safeGet('statLeftovers'),
+                statWordCloud: safeGet('statWordCloud'),
+                statTopMeals: safeGet('statTopMeals'),
+                statOverdue: safeGet('statOverdue'),
+                statFastestRepeat: safeGet('statFastestRepeat'),
+                statChaos: safeGet('statChaos'),
+                pickMealBtn: safeGet('pickMealBtn'),
+                pickerResult: safeGet('pickerResult'),
+                pickerMealName: safeGet('pickerMealName'),
                 
-                wordStatsModal: document.getElementById('wordStatsModal'),
-                closeWordModalBtn: document.getElementById('closeWordModalBtn'),
-                wsWord: document.getElementById('wsWord'),
-                wsCount: document.getElementById('wsCount'),
-                wsFreq: document.getElementById('wsFreq'),
-                wsLastDate: document.getElementById('wsLastDate'),
-                wsDaysAgo: document.getElementById('wsDaysAgo'),
-                wsHistoryList: document.getElementById('wsHistoryList'),
+                wordStatsModal: safeGet('wordStatsModal'),
+                closeWordModalBtn: safeGet('closeWordModalBtn'),
+                wsWord: safeGet('wsWord'),
+                wsCount: safeGet('wsCount'),
+                wsFreq: safeGet('wsFreq'),
+                wsLastDate: safeGet('wsLastDate'),
+                wsDaysAgo: safeGet('wsDaysAgo'),
+                wsHistoryList: safeGet('wsHistoryList'),
             };
 
             let dinners = [];
@@ -368,60 +374,66 @@
             let fileToUpload = null;
             let docIdToDelete = null;
 
-            // GLOBAL TAB SWITCHER (Made global so openEdit can access it)
             window.switchTab = function(tab) {
+                if(!els.logView || !els.historyView || !els.cloudView || !els.statsView) return;
+
                 [els.logView, els.historyView, els.cloudView, els.statsView].forEach(el => el.classList.add('hidden'));
                 
                 [els.navLogBtn, els.navHistoryBtn, els.navCloudBtn, els.navStatsBtn].forEach(btn => {
-                    btn.classList.remove('text-blue-600', 'dark:text-blue-400');
-                    btn.classList.add('text-slate-400', 'dark:text-slate-500');
+                    if(btn) {
+                        btn.classList.remove('text-blue-600', 'dark:text-blue-400');
+                        btn.classList.add('text-slate-400', 'dark:text-slate-500');
+                    }
                 });
 
                 if (tab === 'log') {
                     els.logView.classList.remove('hidden');
-                    els.navLogBtn.classList.add('text-blue-600', 'dark:text-blue-400');
-                    els.navLogBtn.classList.remove('text-slate-400', 'dark:text-slate-500');
+                    if(els.navLogBtn) {
+                        els.navLogBtn.classList.add('text-blue-600', 'dark:text-blue-400');
+                        els.navLogBtn.classList.remove('text-slate-400', 'dark:text-slate-500');
+                    }
                 } else if (tab === 'history') {
                     els.historyView.classList.remove('hidden');
-                    els.navHistoryBtn.classList.add('text-blue-600', 'dark:text-blue-400');
-                    els.navHistoryBtn.classList.remove('text-slate-400', 'dark:text-slate-500');
+                    if(els.navHistoryBtn) {
+                        els.navHistoryBtn.classList.add('text-blue-600', 'dark:text-blue-400');
+                        els.navHistoryBtn.classList.remove('text-slate-400', 'dark:text-slate-500');
+                    }
                 } else if (tab === 'cloud') {
                     els.cloudView.classList.remove('hidden');
-                    els.navCloudBtn.classList.add('text-blue-600', 'dark:text-blue-400');
-                    els.navCloudBtn.classList.remove('text-slate-400', 'dark:text-slate-500');
+                    if(els.navCloudBtn) {
+                        els.navCloudBtn.classList.add('text-blue-600', 'dark:text-blue-400');
+                        els.navCloudBtn.classList.remove('text-slate-400', 'dark:text-slate-500');
+                    }
                     calculateStats();
                 } else if (tab === 'stats') {
                     els.statsView.classList.remove('hidden');
-                    els.navStatsBtn.classList.add('text-blue-600', 'dark:text-blue-400');
-                    els.navStatsBtn.classList.remove('text-slate-400', 'dark:text-slate-500');
+                    if(els.navStatsBtn) {
+                        els.navStatsBtn.classList.add('text-blue-600', 'dark:text-blue-400');
+                        els.navStatsBtn.classList.remove('text-slate-400', 'dark:text-slate-500');
+                    }
                     calculateStats();
                 }
             };
 
-            // --- STATS ENGINE ---
             function calculateStats() {
                 if (!dinners.length) return;
 
-                // 1. Total Count
-                els.statTotalCount.textContent = dinners.length;
+                if(els.statTotalCount) els.statTotalCount.textContent = dinners.length;
 
-                // 2. Count "Leftovers"
                 const leftoverCount = dinners.filter(d => d.meal.toLowerCase().includes('leftover')).length;
-                els.statLeftovers.textContent = leftoverCount;
+                if(els.statLeftovers) els.statLeftovers.textContent = leftoverCount;
 
-                // 3. Chaos Nights
                 const dateCounts = {};
                 dinners.forEach(d => {
                     const date = d.date.split('T')[0];
                     dateCounts[date] = (dateCounts[date] || 0) + 1;
                 });
                 const chaosCount = Object.values(dateCounts).filter(c => c > 1).length;
-                els.statChaos.textContent = chaosCount;
+                if(els.statChaos) els.statChaos.textContent = chaosCount;
 
-                // 4. Word Analysis
+                // Word Analysis
                 const stopWords = ['and', 'with', 'the', 'a', 'an', '&', 'of', 'in', 'on', 'w/', 'sauce', 'meal', 'dinner', 'lunch'];
                 const wordCounts = {};
-                
                 dinners.forEach(d => {
                     const words = d.meal.toLowerCase().split(/[\s,&]+/);
                     words.forEach(w => {
@@ -434,105 +446,95 @@
 
                 const sortedWords = Object.entries(wordCounts).sort((a, b) => b[1] - a[1]);
 
-                // Render Cloud
-                els.statWordCloud.innerHTML = sortedWords.map(([word, count]) => {
-                    let sizeClass = "text-xs px-3 py-1";
-                    if (count > 8) sizeClass = "text-xl px-5 py-3 font-bold";
-                    else if (count > 4) sizeClass = "text-base px-4 py-2 font-semibold";
-                    else if (count > 2) sizeClass = "text-sm px-3 py-1.5 font-medium";
-                    return `<button onclick="openWordStats('${word}')" class="${sizeClass} bg-slate-100 hover:bg-blue-100 text-slate-600 hover:text-blue-600 dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-300 dark:hover:text-white rounded-full transition-colors duration-200 capitalize shadow-sm border border-slate-200 dark:border-slate-600 mb-2">${word}</button>`;
-                }).join('');
+                if(els.statWordCloud) {
+                    els.statWordCloud.innerHTML = sortedWords.map(([word, count]) => {
+                        let sizeClass = "text-xs px-3 py-1";
+                        if (count > 8) sizeClass = "text-xl px-5 py-3 font-bold";
+                        else if (count > 4) sizeClass = "text-base px-4 py-2 font-semibold";
+                        else if (count > 2) sizeClass = "text-sm px-3 py-1.5 font-medium";
+                        return `<button onclick="openWordStats('${word}')" class="${sizeClass} bg-slate-100 hover:bg-blue-100 text-slate-600 hover:text-blue-600 dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-300 dark:hover:text-white rounded-full transition-colors duration-200 capitalize shadow-sm border border-slate-200 dark:border-slate-600 mb-2">${word}</button>`;
+                    }).join('');
+                }
 
-                // Render Top 5
-                els.statTopMeals.innerHTML = sortedWords.slice(0, 5).map(([name, count], index) => `
-                    <div class="flex items-center justify-between p-2 border-b border-slate-100 dark:border-slate-700/50 last:border-0">
-                        <div class="flex items-center gap-3">
-                            <span class="font-bold text-slate-400 w-4 text-center">${index + 1}</span>
-                            <span class="font-medium text-slate-700 dark:text-slate-200 capitalize">${name}</span>
+                if(els.statTopMeals) {
+                    els.statTopMeals.innerHTML = sortedWords.slice(0, 5).map(([name, count], index) => `
+                        <div class="flex items-center justify-between p-2 border-b border-slate-100 dark:border-slate-700/50 last:border-0">
+                            <div class="flex items-center gap-3">
+                                <span class="font-bold text-slate-400 w-4 text-center">${index + 1}</span>
+                                <span class="font-medium text-slate-700 dark:text-slate-200 capitalize">${name}</span>
+                            </div>
+                            <span class="text-xs font-bold bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded-full">${count}</span>
                         </div>
-                        <span class="text-xs font-bold bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded-full">${count}</span>
-                    </div>
-                `).join('');
-
-                // 5. Most Overdue Favorite
-                const popularWords = sortedWords.filter(x => x[1] >= 3).map(x => x[0]);
-                let oldestFav = { word: null, date: new Date() };
-                
-                popularWords.forEach(word => {
-                    const entries = dinners.filter(d => d.meal.toLowerCase().includes(word));
-                    entries.sort((a, b) => new Date(b.date) - new Date(a.date));
-                    const lastEaten = new Date(entries[0].date);
-                    if (lastEaten < oldestFav.date) {
-                        oldestFav = { word: word, date: lastEaten };
-                    }
-                });
-
-                if (oldestFav.word) {
-                    const daysAgo = Math.floor((new Date() - oldestFav.date) / (1000 * 60 * 60 * 24));
-                    els.statOverdue.innerHTML = `<span class="capitalize text-lg font-bold">${oldestFav.word}</span> <span class="text-sm opacity-75">(${daysAgo} days ago)</span>`;
-                } else {
-                    els.statOverdue.textContent = "Need more data (3+ eats)";
+                    `).join('');
                 }
 
-                // 6. Fastest Repeat
-                let minGap = Infinity;
-                let fastMeal = null;
-                const chronDinners = [...dinners].sort((a, b) => new Date(a.date) - new Date(b.date));
-                
-                for (let i = 0; i < chronDinners.length - 1; i++) {
-                    const d1 = chronDinners[i];
-                    for (let j = i + 1; j < chronDinners.length; j++) {
-                        const d2 = chronDinners[j];
-                        if (d1.meal.toLowerCase() === d2.meal.toLowerCase() && !d1.meal.toLowerCase().includes('leftover')) {
-                            const diffTime = Math.abs(new Date(d2.date) - new Date(d1.date));
-                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                            if (diffDays > 0 && diffDays < minGap) {
-                                minGap = diffDays;
-                                fastMeal = d1.meal;
+                // Overdue Favorite (Threshold lowered to 2)
+                if(els.statOverdue) {
+                    const popularWords = sortedWords.filter(x => x[1] >= 2).map(x => x[0]);
+                    let oldestFav = { word: null, date: new Date() };
+                    popularWords.forEach(word => {
+                        const entries = dinners.filter(d => d.meal.toLowerCase().includes(word));
+                        entries.sort((a, b) => new Date(b.date) - new Date(a.date));
+                        const lastEaten = new Date(entries[0].date);
+                        if (lastEaten < oldestFav.date) oldestFav = { word: word, date: lastEaten };
+                    });
+
+                    if (oldestFav.word) {
+                        const daysAgo = Math.floor((new Date() - oldestFav.date) / (1000 * 60 * 60 * 24));
+                        els.statOverdue.innerHTML = `<span class="capitalize text-lg font-bold">${oldestFav.word}</span> <span class="text-sm opacity-75">(${daysAgo} days ago)</span>`;
+                    } else {
+                        els.statOverdue.textContent = "Need more data (2+ eats)";
+                    }
+                }
+
+                // Fastest Repeat
+                if(els.statFastestRepeat) {
+                    let minGap = Infinity;
+                    let fastMeal = null;
+                    const chronDinners = [...dinners].sort((a, b) => new Date(a.date) - new Date(b.date));
+                    for (let i = 0; i < chronDinners.length - 1; i++) {
+                        const d1 = chronDinners[i];
+                        for (let j = i + 1; j < chronDinners.length; j++) {
+                            const d2 = chronDinners[j];
+                            if (d1.meal.toLowerCase() === d2.meal.toLowerCase() && !d1.meal.toLowerCase().includes('leftover')) {
+                                const diffTime = Math.abs(new Date(d2.date) - new Date(d1.date));
+                                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                                if (diffDays > 0 && diffDays < minGap) {
+                                    minGap = diffDays;
+                                    fastMeal = d1.meal;
+                                }
+                                break; 
                             }
-                            break; 
+                            if (j > i + 10) break; 
                         }
-                        if (j > i + 10) break; 
                     }
-                }
-
-                if (fastMeal) {
-                    els.statFastestRepeat.innerHTML = `<span class="capitalize text-lg font-bold">${fastMeal}</span> <span class="text-sm opacity-75">(${minGap} days later)</span>`;
-                } else {
-                    els.statFastestRepeat.textContent = "No repeats yet!";
+                    if (fastMeal) els.statFastestRepeat.innerHTML = `<span class="capitalize text-lg font-bold">${fastMeal}</span> <span class="text-sm opacity-75">(${minGap} days later)</span>`;
+                    else els.statFastestRepeat.textContent = "No repeats yet!";
                 }
             }
 
-            // --- MEAL PICKER LOGIC ---
-            els.pickMealBtn.addEventListener('click', () => {
-                const thirtyDaysAgo = new Date();
-                thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-                
-                const recentMeals = new Set(
-                    dinners.filter(d => new Date(d.date) > thirtyDaysAgo)
-                    .map(d => d.meal.trim().toLowerCase())
-                );
-
-                const eligibleMeals = dinners
-                    .map(d => d.meal.trim())
-                    .filter(name => {
+            if(els.pickMealBtn) {
+                els.pickMealBtn.addEventListener('click', () => {
+                    const thirtyDaysAgo = new Date();
+                    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                    const recentMeals = new Set(dinners.filter(d => new Date(d.date) > thirtyDaysAgo).map(d => d.meal.trim().toLowerCase()));
+                    const eligibleMeals = dinners.map(d => d.meal.trim()).filter(name => {
                         const lower = name.toLowerCase();
                         return !recentMeals.has(lower) && !lower.includes('leftover');
                     });
-                
-                const uniqueEligible = [...new Set(eligibleMeals)];
+                    const uniqueEligible = [...new Set(eligibleMeals)];
+                    if (els.pickerResult && els.pickerMealName) {
+                        els.pickerResult.classList.remove('hidden');
+                        if (uniqueEligible.length > 0) {
+                            const randomMeal = uniqueEligible[Math.floor(Math.random() * uniqueEligible.length)];
+                            els.pickerMealName.textContent = randomMeal;
+                        } else {
+                            els.pickerMealName.textContent = "You've eaten everything recently!";
+                        }
+                    }
+                });
+            }
 
-                if (uniqueEligible.length > 0) {
-                    const randomMeal = uniqueEligible[Math.floor(Math.random() * uniqueEligible.length)];
-                    els.pickerResult.classList.remove('hidden');
-                    els.pickerMealName.textContent = randomMeal;
-                } else {
-                    els.pickerResult.classList.remove('hidden');
-                    els.pickerMealName.textContent = "You've eaten everything recently!";
-                }
-            });
-
-            // Global Functions
             window.openWordStats = function(word) {
                 const matches = dinners.filter(d => d.meal.toLowerCase().includes(word.toLowerCase()));
                 if (matches.length === 0) return;
@@ -550,23 +552,26 @@
                     freqText = `Every ${avgGap} days`;
                 }
 
-                els.wsWord.textContent = word;
-                els.wsCount.textContent = count;
-                els.wsFreq.textContent = freqText;
-                els.wsLastDate.textContent = lastDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                els.wsDaysAgo.textContent = daysAgo === 0 ? "(Today)" : `(${daysAgo} days ago)`;
-                els.wsHistoryList.innerHTML = matches.map(m => {
-                    const d = new Date(m.date);
-                    return `<div class="flex justify-between border-b border-slate-100 dark:border-slate-700/50 py-1 last:border-0"><span>${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span><span class="text-slate-400 text-xs truncate max-w-[150px]">${m.meal}</span></div>`
-                }).join('');
-                els.wordStatsModal.style.display = 'flex';
+                if(els.wsWord) els.wsWord.textContent = word;
+                if(els.wsCount) els.wsCount.textContent = count;
+                if(els.wsFreq) els.wsFreq.textContent = freqText;
+                if(els.wsLastDate) els.wsLastDate.textContent = lastDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                if(els.wsDaysAgo) els.wsDaysAgo.textContent = daysAgo === 0 ? "(Today)" : `(${daysAgo} days ago)`;
+                if(els.wsHistoryList) {
+                    els.wsHistoryList.innerHTML = matches.map(m => {
+                        const d = new Date(m.date);
+                        return `<div class="flex justify-between border-b border-slate-100 dark:border-slate-700/50 py-1 last:border-0"><span>${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span><span class="text-slate-400 text-xs truncate max-w-[150px]">${m.meal}</span></div>`
+                    }).join('');
+                }
+                if(els.wordStatsModal) els.wordStatsModal.style.display = 'flex';
             };
 
-            els.closeWordModalBtn.addEventListener('click', () => els.wordStatsModal.style.display = 'none');
+            if(els.closeWordModalBtn) els.closeWordModalBtn.addEventListener('click', () => els.wordStatsModal.style.display = 'none');
+            
             window.onclick = e => {
-                 if(e.target === els.wordStatsModal) els.wordStatsModal.style.display = 'none';
-                 if(e.target === els.dinnerModal) els.dinnerModal.style.display = 'none';
-                 if(e.target === els.deleteModal) els.deleteModal.style.display = 'none';
+                 if(els.wordStatsModal && e.target === els.wordStatsModal) els.wordStatsModal.style.display = 'none';
+                 if(els.dinnerModal && e.target === els.dinnerModal) els.dinnerModal.style.display = 'none';
+                 if(els.deleteModal && e.target === els.deleteModal) els.deleteModal.style.display = 'none';
             };
 
             const msgBox = document.createElement('div');
@@ -581,6 +586,7 @@
             }
 
             function renderDinners(entries) {
+                if(!els.dinnerList) return;
                 els.dinnerList.innerHTML = '';
                 if (entries.length === 0) {
                     els.dinnerList.innerHTML = '<p class="text-center text-slate-500 py-10">No history yet.</p>';
@@ -641,68 +647,108 @@
                 const year = today.getFullYear();
                 const month = String(today.getMonth() + 1).padStart(2, '0');
                 const day = String(today.getDate()).padStart(2, '0');
-                els.dateInput.value = `${year}-${month}-${day}`;
+                if(els.dateInput) els.dateInput.value = `${year}-${month}-${day}`;
             }
 
             function resetForm() {
-                els.mealInput.value = '';
+                if(els.mealInput) els.mealInput.value = '';
                 setDefaultDate(); 
                 selectedTags = [];
                 editingDocId = null;
-                els.addButton.textContent = 'Log This Dinner';
+                if(els.addButton) els.addButton.textContent = 'Log This Dinner';
                 els.tagButtons.forEach(btn => applyTagStyles(btn, false));
                 fileToUpload = null;
-                els.photoUpload.value = '';
-                els.imagePreview.src = 'https://placehold.co/100x100/e2e8f0/9ca3af?text=Preview';
-                els.uploadStatus.textContent = '';
+                if(els.photoUpload) els.photoUpload.value = '';
+                if(els.imagePreview) els.imagePreview.src = 'https://placehold.co/100x100/e2e8f0/9ca3af?text=Preview';
+                if(els.uploadStatus) els.uploadStatus.textContent = '';
             }
 
             function openDelete(id) {
                 const entry = dinners.find(d => d.id === id);
                 if(!entry) return;
                 docIdToDelete = id;
-                els.deleteMealName.textContent = entry.meal;
-                els.deleteModal.style.display = 'flex';
+                if(els.deleteMealName) els.deleteMealName.textContent = entry.meal;
+                if(els.deleteModal) els.deleteModal.style.display = 'flex';
             }
 
             async function doDelete() {
                 if(!docIdToDelete) return;
                 await deleteDoc(doc(db, dbCollectionPath, docIdToDelete));
                 toast('Deleted.');
-                els.deleteModal.style.display = 'none';
+                if(els.deleteModal) els.deleteModal.style.display = 'none';
+            }
+
+            async function handleAdd() {
+                const meal = els.mealInput.value.trim();
+                if (!isAuthenticated) return toast('App not connected.', 'error');
+                if (!meal) return toast('Please enter a meal.', 'error');
+                
+                let img = editingDocId ? dinners.find(d => d.id === editingDocId)?.imageUrl : null;
+                if (fileToUpload) {
+                    if(els.uploadStatus) els.uploadStatus.textContent = 'Uploading...';
+                    if(els.addButton) els.addButton.disabled = true;
+                    try {
+                        const fd = new FormData(); fd.append('file', fileToUpload); fd.append('upload_preset', cloudinaryUploadPreset);
+                        const res = await fetch(cloudinaryUrl, { method: 'POST', body: fd });
+                        if(!res.ok) throw new Error();
+                        const data = await res.json();
+                        img = data.secure_url;
+                    } catch(e) {
+                        toast('Photo upload failed', 'error');
+                        if(els.addButton) els.addButton.disabled = false;
+                        return; 
+                    }
+                }
+
+                const dStr = els.dateInput.value;
+                const dateObj = dStr ? new Date(`${dStr}T00:00:00Z`) : new Date();
+                dateObj.setUTCHours(0,0,0,0);
+                
+                const entry = { meal, date: dateObj.toISOString(), tags: selectedTags, imageUrl: img, authorId: userId };
+                
+                try {
+                    if(editingDocId) await setDoc(doc(db, dbCollectionPath, editingDocId), entry);
+                    else await addDoc(collection(db, dbCollectionPath), entry);
+                    
+                    toast(editingDocId ? 'Updated!' : 'Saved!');
+                    resetForm();
+                    if(els.addButton) els.addButton.disabled = false;
+                    if(els.uploadStatus) els.uploadStatus.textContent = '';
+                } catch(e) { console.error(e); toast('Error saving.', 'error'); if(els.addButton) els.addButton.disabled = false; }
             }
 
             function openEdit(id) {
                 const entry = dinners.find(d => d.id === id);
                 if(!entry) return;
                 resetForm();
-                els.mealInput.value = entry.meal;
+                if(els.mealInput) els.mealInput.value = entry.meal;
                 
-                // DATE FIX: Use Local Time for Edit (keeps it on the correct day)
                 const d = new Date(entry.date);
-                const year = d.getFullYear();
-                const month = String(d.getMonth() + 1).padStart(2, '0');
-                const day = String(d.getDate()).padStart(2, '0');
-                els.dateInput.value = `${year}-${month}-${day}`;
+                const year = d.getUTCFullYear();
+                const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+                const day = String(d.getUTCDate()).padStart(2, '0');
+                if(els.dateInput) els.dateInput.value = `${year}-${month}-${day}`;
 
                 selectedTags = entry.tags || [];
                 editingDocId = id;
-                els.addButton.textContent = 'Update Entry';
-                if(entry.imageUrl) { els.imagePreview.src = entry.imageUrl; els.uploadStatus.textContent = "Current photo"; }
+                if(els.addButton) els.addButton.textContent = 'Update Entry';
+                if(entry.imageUrl) { 
+                    if(els.imagePreview) els.imagePreview.src = entry.imageUrl; 
+                    if(els.uploadStatus) els.uploadStatus.textContent = "Current photo"; 
+                }
                 els.tagButtons.forEach(btn => applyTagStyles(btn, selectedTags.includes(btn.dataset.tag)));
                 
-                // Use the Global switchTab (now accessible)
                 window.switchTab('log'); 
                 window.scrollTo({top:0, behavior:'smooth'});
             }
 
-            els.addButton.addEventListener('click', handleAdd);
-            els.uploadBtn.addEventListener('click', () => els.photoUpload.click());
-            els.photoUpload.addEventListener('change', e => {
+            if(els.addButton) els.addButton.addEventListener('click', handleAdd);
+            if(els.uploadBtn) els.uploadBtn.addEventListener('click', () => els.photoUpload.click());
+            if(els.photoUpload) els.photoUpload.addEventListener('change', e => {
                 if(e.target.files[0]) {
                     fileToUpload = e.target.files[0];
-                    els.imagePreview.src = URL.createObjectURL(fileToUpload);
-                    els.uploadStatus.textContent = "Selected";
+                    if(els.imagePreview) els.imagePreview.src = URL.createObjectURL(fileToUpload);
+                    if(els.uploadStatus) els.uploadStatus.textContent = "Selected";
                 }
             });
             els.tagButtons.forEach(btn => {
@@ -714,7 +760,7 @@
                     applyTagStyles(btn, selectedTags.includes(t));
                 });
             });
-            els.dinnerList.addEventListener('click', e => {
+            if(els.dinnerList) els.dinnerList.addEventListener('click', e => {
                 const del = e.target.closest('.delete-btn');
                 const edit = e.target.closest('.edit-btn');
                 const item = e.target.closest('.entry-click');
@@ -722,49 +768,55 @@
                 else if(edit) openEdit(edit.dataset.id);
                 else if(item) {
                     const ent = dinners.find(d => d.id === item.dataset.id);
-                    els.modalMeal.textContent = ent.meal;
-                    els.modalDate.textContent = new Date(ent.date).toLocaleDateString('en-US', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
-                    els.modalTags.innerHTML = (ent.tags||[]).map(t => {
+                    if(els.modalMeal) els.modalMeal.textContent = ent.meal;
+                    if(els.modalDate) els.modalDate.textContent = new Date(ent.date).toLocaleDateString('en-US', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+                    if(els.modalTags) els.modalTags.innerHTML = (ent.tags||[]).map(t => {
                         let c = 'bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-300';
                         if(t==='Chad') c='bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300';
                         if(t==='Mom') c='bg-pink-100 text-pink-700 dark:bg-pink-900/40 dark:text-pink-300';
                         if(t==='Dad') c='bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300';
                         return `<span class="text-xs ${c} px-2 py-1 rounded-full">${t}</span>`;
                     }).join('');
-                    els.modalImage.src = ent.imageUrl || '';
-                    els.modalImage.style.display = ent.imageUrl ? 'block' : 'none';
-                    els.dinnerModal.style.display = 'flex';
+                    if(els.modalImage) {
+                        els.modalImage.src = ent.imageUrl || '';
+                        els.modalImage.style.display = ent.imageUrl ? 'block' : 'none';
+                    }
+                    if(els.dinnerModal) els.dinnerModal.style.display = 'flex';
                 }
             });
-            els.closeModalBtn.addEventListener('click', () => els.dinnerModal.style.display = 'none');
-            els.cancelDelete.addEventListener('click', () => els.deleteModal.style.display = 'none');
-            els.confirmDelete.addEventListener('click', doDelete);
-            els.searchInput.addEventListener('input', () => {
+            if(els.closeModalBtn) els.closeModalBtn.addEventListener('click', () => els.dinnerModal.style.display = 'none');
+            if(els.cancelDelete) els.cancelDelete.addEventListener('click', () => els.deleteModal.style.display = 'none');
+            if(els.confirmDelete) els.confirmDelete.addEventListener('click', doDelete);
+            if(els.searchInput) els.searchInput.addEventListener('input', () => {
                 const q = els.searchInput.value.toLowerCase();
                 renderDinners(dinners.filter(d => d.meal.toLowerCase().includes(q) || (d.tags||[]).some(t => t.toLowerCase().includes(q))));
             });
-            window.onclick = e => {
-                if(e.target === els.dinnerModal) els.dinnerModal.style.display = 'none';
-                if(e.target === els.deleteModal) els.deleteModal.style.display = 'none';
-            };
             
             setDefaultDate();
 
             onAuthStateChanged(auth, user => {
                 if(user) {
                     isAuthenticated = true; userId = user.uid;
-                    els.loading.style.display = 'none';
-                    els.userIdDisplay.textContent = 'ID: ' + user.uid.slice(0,6)+'...';
+                    if(els.loading) els.loading.style.display = 'none';
+                    if(els.userIdDisplay) els.userIdDisplay.textContent = 'ID: ' + user.uid.slice(0,6)+'...';
                     onSnapshot(collection(db, dbCollectionPath), snap => {
                         dinners = snap.docs.map(d => ({id: d.id, ...d.data()}));
                         renderDinners(dinners);
-                        if(!els.statsView.classList.contains('hidden')) calculateStats();
-                        if(!els.cloudView.classList.contains('hidden')) calculateStats();
+                        if(els.statsView && !els.statsView.classList.contains('hidden')) calculateStats();
+                        if(els.cloudView && !els.cloudView.classList.contains('hidden')) calculateStats();
                     });
                 } else { signInAnonymously(auth); }
             });
 
-        } catch(e) { console.error(e); document.body.innerHTML = '<p class="p-10 text-center text-red-500">Config Error</p>'; }
+        } catch(e) { 
+            console.error(e); 
+            // IMPROVED ERROR DISPLAY
+            document.body.innerHTML = `<div class="p-10 text-center text-red-500">
+                <h1 class="text-xl font-bold">App Error</h1>
+                <p class="mt-2">${e.message}</p>
+                <pre class="mt-4 text-xs text-left bg-gray-100 p-4 overflow-auto rounded text-black">${e.stack}</pre>
+            </div>`; 
+        }
     </script>
 </body>
 </html>
