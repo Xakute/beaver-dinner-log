@@ -69,10 +69,12 @@
                 <input id="dateInput" type="date" class="relative w-full p-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 transition duration-200">
             </div>
 
-            <!-- Step 2: Meal -->
-            <div class="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
-                <label class="block text-md font-semibold mb-3 text-center text-slate-600 dark:text-slate-300">Step 2: What?</label>
+            <!-- Step 2: Meal & Notes -->
+            <div class="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm space-y-3">
+                <label class="block text-md font-semibold text-center text-slate-600 dark:text-slate-300">Step 2: What?</label>
                 <input id="mealInput" type="text" placeholder="e.g., Spaghetti and Meatballs" class="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-blue-500 transition duration-200">
+                <!-- NEW: NOTES INPUT -->
+                <input id="notesInput" type="text" placeholder="Notes (Optional) - e.g. 'Restaurant name' or 'Recipe info'" class="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-blue-500 transition duration-200 text-sm">
             </div>
 
             <!-- Step 3: Who Ate -->
@@ -131,7 +133,6 @@
             <!-- The Meal Picker -->
             <div class="p-6 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl shadow-lg text-center text-white mb-6">
                 <h3 class="text-xl font-bold mb-2">Can't Decide?</h3>
-                <p class="text-blue-100 text-sm mb-4">Pick a random meal we haven't had in 30+ days.</p>
                 <button id="pickMealBtn" class="bg-white text-blue-600 font-bold py-3 px-8 rounded-full shadow-md hover:bg-blue-50 transition transform hover:scale-105 active:scale-95">
                     🎲 Spin the Wheel
                 </button>
@@ -215,6 +216,14 @@
                 </button>
                 <p id="aiStatus" class="text-xs text-center mt-3 text-indigo-100 opacity-0 transition-opacity">Connecting to Gemini...</p>
             </div>
+            <!-- AI Insight Card (Hidden until generated) -->
+            <div id="aiInsightCard" class="hidden bg-indigo-50 dark:bg-indigo-900/30 p-5 rounded-2xl border border-indigo-200 dark:border-indigo-700 shadow-sm relative overflow-hidden mt-4">
+                <div class="absolute -right-6 -top-6 text-indigo-100 dark:text-indigo-800 opacity-20">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-32 w-32" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                </div>
+                <h3 class="font-bold text-indigo-800 dark:text-indigo-200 mb-2 relative z-10">👨‍🍳 Chef's Insight</h3>
+                <p id="aiInsightText" class="text-sm text-slate-700 dark:text-slate-300 relative z-10 italic">Analysis goes here...</p>
+            </div>
             <!-- END STATS VIEW -->
         </div> 
     </div> 
@@ -253,6 +262,8 @@
                 <div class="space-y-2 text-center">
                     <p id="modalMeal" class="text-3xl font-bold text-slate-800 dark:text-slate-100"></p>
                     <p id="modalDate" class="text-sm text-slate-500 dark:text-slate-400"></p>
+                    <!-- NEW: NOTES DISPLAY IN MODAL -->
+                    <p id="modalNotes" class="text-sm text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-700/50 p-3 rounded-lg border border-slate-100 dark:border-slate-700 italic hidden"></p>
                     <div id="modalTags" class="flex flex-wrap gap-2 justify-center"></div>
                 </div>
             </div>
@@ -354,6 +365,7 @@
                 navStatsBtn: safeGet('navStatsBtn'),
                 
                 mealInput: safeGet('mealInput'),
+                notesInput: safeGet('notesInput'), // NEW
                 dateInput: safeGet('dateInput'),
                 addButton: safeGet('addButton'),
                 searchInput: safeGet('searchInput'),
@@ -367,6 +379,7 @@
                 modalMeal: safeGet('modalMeal'),
                 modalDate: safeGet('modalDate'),
                 modalTags: safeGet('modalTags'),
+                modalNotes: safeGet('modalNotes'), // NEW
                 
                 deleteModal: safeGet('deleteConfirmModal'),
                 cancelDelete: safeGet('cancelDeleteBtn'),
@@ -575,7 +588,11 @@
 
                     if(els.statTotalCount) els.statTotalCount.textContent = dinners.length;
 
-                    const leftoverCount = dinners.filter(d => (d.meal || "").toLowerCase().includes('leftover')).length;
+                    // UPDATED: Count leftovers (using parens logic)
+                    const leftoverCount = dinners.filter(d => {
+                        let cleanMeal = (d.meal || "").replace(/\s*\(.*?\)\s*/g, '');
+                        return cleanMeal.toLowerCase().includes('leftover');
+                    }).length;
                     if(els.statLeftovers) els.statLeftovers.textContent = leftoverCount;
 
                     const dateCounts = {};
@@ -588,14 +605,55 @@
                     const chaosCount = Object.values(dateCounts).filter(c => c > 1).length;
                     if(els.statChaos) els.statChaos.textContent = chaosCount;
 
-                    // Stop Words
+                    // --- INTELLIGENT PHRASE ENGINE (UPDATED: Remove Parens) ---
                     const stopWords = ['and', 'with', 'the', 'a', 'an', '&', 'of', 'in', 'on', 'w/', 'sauce', 'meal', 'dinner', 'lunch', 'for', 'from', 'we', 'got', 'here', 'watch', 'texas', 'made', 'ate', 'mom', 'dad', 'chad', 'zeus', 'takeout', 'restaurant', 'place', 'eat', 'eating', 'were', 'was', 'had', 'been', 'has'];
+                    const phraseCounts = {};
+                    const splitRegex = /,/i; 
+
+                    dinners.forEach(d => {
+                        if(d.meal) {
+                            // REMOVE PARENS FIRST
+                            let cleanMeal = d.meal.replace(/\s*\(.*?\)\s*/g, '');
+                            const parts = cleanMeal.split(splitRegex);
+                            parts.forEach(part => {
+                                let clean = part.trim().toLowerCase().replace(/^[^a-z0-9]+|[^a-z0-9]+$/g, ''); 
+                                if(clean.length > 2 && !stopWords.includes(clean)) {
+                                    phraseCounts[clean] = (phraseCounts[clean] || 0) + 1;
+                                }
+                            });
+                        }
+                    });
+
+                    // DEDUPLICATION
+                    let finalPhrases = Object.entries(phraseCounts).sort((a,b) => b[1] - a[1]);
+                    finalPhrases = finalPhrases.filter(([phrase, count]) => {
+                        const isSubset = finalPhrases.some(([otherPhrase, otherCount]) => {
+                            return otherPhrase !== phrase && otherPhrase.includes(phrase) && otherCount >= count;
+                        });
+                        return !isSubset;
+                    });
                     
-                    // 1. KEYWORD COUNTER (For Top 5)
+                    // Filter low count items for Cloud
+                    const cloudPhrases = finalPhrases.filter(([_, count]) => count >= 2).slice(0, 50);
+
+                    if(els.statWordCloud) {
+                        els.statWordCloud.innerHTML = cloudPhrases.map(([word, count], index) => {
+                            let sizeClass = "text-xs px-3 py-1";
+                            if (index < 3) sizeClass = "text-3xl px-6 py-3 font-extrabold shadow-md border-2 border-slate-300 dark:border-slate-500";
+                            else if (index < 10) sizeClass = "text-xl px-4 py-2 font-bold shadow-sm";
+                            else if (index < 20) sizeClass = "text-base px-3 py-1.5 font-semibold";
+                            else sizeClass = "text-xs px-2 py-1 font-medium opacity-80";
+
+                            return `<button onclick="openWordStats('${word.replace(/'/g, "\\'")}')" class="${sizeClass} bg-slate-100 hover:bg-blue-100 text-slate-600 hover:text-blue-600 dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-300 dark:hover:text-white rounded-full transition-all duration-200 capitalize border border-slate-200 dark:border-slate-600 mb-2">${word}</button>`;
+                        }).join('');
+                    }
+
+                    // --- KEYWORD LOGIC FOR TOP 5 (UPDATED: Remove Parens) ---
                     const keywordCounts = {};
                     dinners.forEach(d => {
                         if(d.meal) {
-                            const raw = d.meal.toLowerCase().replace(/[^a-z0-9\s]/g, '');
+                            let cleanMeal = d.meal.replace(/\s*\(.*?\)\s*/g, '');
+                            const raw = cleanMeal.toLowerCase().replace(/[^a-z0-9\s]/g, '');
                             const tokens = raw.split(/\s+/).filter(t => t.length > 2);
                             tokens.forEach(t => {
                                 if(!stopWords.includes(t)) keywordCounts[t] = (keywordCounts[t] || 0) + 1;
@@ -604,36 +662,6 @@
                     });
                     const sortedKeywords = Object.entries(keywordCounts).sort((a,b) => b[1] - a[1]);
 
-                    // 2. PHRASE COUNTER (For Cloud & Habits) - Split ONLY by comma
-                    const phraseCounts = {};
-                    const splitRegex = /,/i; 
-                    dinners.forEach(d => {
-                        if(d.meal) {
-                            const parts = d.meal.split(splitRegex);
-                            parts.forEach(part => {
-                                let clean = part.trim().toLowerCase().replace(/^[^a-z0-9]+|[^a-z0-9]+$/g, ''); // Trim punctuation edges
-                                if(clean.length > 2 && !stopWords.includes(clean)) {
-                                    phraseCounts[clean] = (phraseCounts[clean] || 0) + 1;
-                                }
-                            });
-                        }
-                    });
-                    const sortedPhrases = Object.entries(phraseCounts).sort((a,b) => b[1] - a[1]);
-                    
-                    // RENDER WORD CLOUD (Phrases)
-                    const cloudPhrases = sortedPhrases.filter(([_, count]) => count >= 2).slice(0, 50);
-                    if(els.statWordCloud) {
-                        els.statWordCloud.innerHTML = cloudPhrases.map(([word, count], index) => {
-                            let sizeClass = "text-xs px-3 py-1";
-                            if (index < 3) sizeClass = "text-3xl px-6 py-3 font-extrabold shadow-md border-2 border-slate-300 dark:border-slate-500";
-                            else if (index < 10) sizeClass = "text-xl px-4 py-2 font-bold shadow-sm";
-                            else if (index < 20) sizeClass = "text-base px-3 py-1.5 font-semibold";
-                            else sizeClass = "text-xs px-2 py-1 font-medium opacity-80";
-                            return `<button onclick="openWordStats('${word.replace(/'/g, "\\'")}')" class="${sizeClass} bg-slate-100 hover:bg-blue-100 text-slate-600 hover:text-blue-600 dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-300 dark:hover:text-white rounded-full transition-all duration-200 capitalize border border-slate-200 dark:border-slate-600 mb-2">${word}</button>`;
-                        }).join('');
-                    }
-
-                    // RENDER TOP 5 (Keywords - Restoring Chicken)
                     if(els.statTopMeals) {
                         els.statTopMeals.innerHTML = sortedKeywords.slice(0, 5).map(([name, count], index) => `
                             <div class="flex items-center justify-between p-2 border-b border-slate-100 dark:border-slate-700/50 last:border-0">
@@ -680,7 +708,9 @@
                             dayTotals[dayIndex]++;
                             
                             // Use Phrases for Habits (e.g. "Mac and Cheese")
-                            const parts = (d.meal || "").split(/,/i);
+                            // UPDATED: Remove parens
+                            let cleanMeal = (d.meal || "").replace(/\s*\(.*?\)\s*/g, '');
+                            const parts = cleanMeal.split(/,/i);
                             parts.forEach(part => {
                                 let phrase = part.trim().toLowerCase().replace(/^[^a-z0-9]+|[^a-z0-9]+$/g, '');
                                 if(phrase.length > 2 && !stopWords.includes(phrase)) {
@@ -705,18 +735,21 @@
 
                         if (candidates.length > 0) {
                             const winner = candidates[Math.floor(Math.random() * candidates.length)];
-                            els.statDayTrend.innerHTML = `On <strong class="text-indigo-600 dark:text-indigo-400">${winner.day}s</strong>, you eat <strong class="capitalize">${winner.meal}</strong> about <strong>${winner.pct}%</strong> of the time.`;
+                            els.statDayTrend.innerHTML = `On <strong class="text-indigo-600 dark:text-indigo-400">${winner.day}s</strong>, you usually eat <strong class="capitalize">${winner.meal}</strong> about <strong>${winner.pct}%</strong> of the time.`;
                         } else {
                             els.statDayTrend.textContent = "Your eating habits are too chaotic to predict!";
                         }
                     }
 
-                    // Overdue Favorite (Dynamic)
+                    // Overdue Favorite (Dynamic, remove parens)
                     if(els.statOverdue) {
                         const popularPhrases = sortedPhrases.filter(x => x[1] >= 2).map(x => x[0]);
                         let overdueCandidates = [];
                         popularPhrases.forEach(word => {
-                            const entries = dinners.filter(d => (d.meal || "").toLowerCase().includes(word));
+                            const entries = dinners.filter(d => {
+                                let clean = (d.meal || "").replace(/\s*\(.*?\)\s*/g, '');
+                                return clean.toLowerCase().includes(word)
+                            });
                             entries.sort((a, b) => new Date(b.date) - new Date(a.date));
                             if(entries.length > 0 && entries[0].date) {
                                 const lastEaten = new Date(entries[0].date);
@@ -734,23 +767,23 @@
                         }
                     }
 
-                    // Fastest Repeat
+                    // Fastest Repeat (Remove Parens)
                     if(els.statFastestRepeat) {
                         let minGap = Infinity;
                         let fastMeal = null;
                         const chronDinners = [...dinners].sort((a, b) => new Date(a.date) - new Date(b.date));
                         for (let i = 0; i < chronDinners.length - 1; i++) {
                             const d1 = chronDinners[i];
-                            const m1 = (d1.meal || "").toLowerCase().trim();
+                            let m1 = (d1.meal || "").replace(/\s*\(.*?\)\s*/g, '').toLowerCase().trim();
                             for (let j = i + 1; j < chronDinners.length; j++) {
                                 const d2 = chronDinners[j];
-                                const m2 = (d2.meal || "").toLowerCase().trim();
+                                let m2 = (d2.meal || "").replace(/\s*\(.*?\)\s*/g, '').toLowerCase().trim();
                                 if (m1 && m2 && (m1 === m2 || (m1.length > 4 && m2.includes(m1))) && !m1.includes('leftover')) {
                                     const diffTime = Math.abs(new Date(d2.date) - new Date(d1.date));
                                     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                                     if (diffDays > 0 && diffDays < minGap) {
                                         minGap = diffDays;
-                                        fastMeal = d1.meal;
+                                        fastMeal = d1.meal; // Keep original case for display if desired, or m1
                                     }
                                     break; 
                                 }
@@ -771,8 +804,8 @@
                 els.pickMealBtn.addEventListener('click', () => {
                     const thirtyDaysAgo = new Date();
                     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-                    const recentMeals = new Set(dinners.filter(d => new Date(d.date) > thirtyDaysAgo).map(d => (d.meal || "").trim().toLowerCase()));
-                    const eligibleMeals = dinners.map(d => (d.meal || "").trim()).filter(name => {
+                    const recentMeals = new Set(dinners.filter(d => new Date(d.date) > thirtyDaysAgo).map(d => (d.meal || "").replace(/\s*\(.*?\)\s*/g, '').trim().toLowerCase()));
+                    const eligibleMeals = dinners.map(d => (d.meal || "").replace(/\s*\(.*?\)\s*/g, '').trim()).filter(name => {
                         const lower = name.toLowerCase();
                         return !recentMeals.has(lower) && !lower.includes('leftover') && name.length > 2;
                     });
@@ -888,11 +921,21 @@
                             if(t==='Dad') c='bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300';
                             return `<span class="text-xs ${c} px-2 py-1 rounded-full">${t}</span>`;
                         }).join(' ');
+                        
+                        // NEW: Show Notes Indicator
+                        let notesIndicator = '';
+                        if(entry.notes) {
+                             notesIndicator = `<span class="ml-2 text-[10px] text-slate-400 bg-slate-100 dark:bg-slate-700/50 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-600">📝</span>`;
+                        }
+
                         item.innerHTML = `
                             <div class="flex items-center flex-grow min-w-0">
                                 ${thumb}
-                                <div class="entry-click cursor-pointer min-w-0" data-id="${entry.id}">
-                                    <p class="text-base font-semibold text-slate-800 dark:text-slate-100 whitespace-normal break-words">${entry.meal}</p>
+                                <div class="entry-click cursor-pointer min-w-0 flex-1" data-id="${entry.id}">
+                                    <div class="flex items-center">
+                                        <p class="text-base font-semibold text-slate-800 dark:text-slate-100 whitespace-normal break-words">${entry.meal}</p>
+                                        ${notesIndicator}
+                                    </div>
                                     <div class="flex gap-1 mt-0.5">${tags}</div>
                                 </div>
                             </div>
@@ -924,6 +967,7 @@
 
             function resetForm() {
                 if(els.mealInput) els.mealInput.value = '';
+                if(els.notesInput) els.notesInput.value = ''; // NEW: Reset Notes
                 setDefaultDate(); 
                 selectedTags = [];
                 editingDocId = null;
@@ -952,6 +996,8 @@
 
             async function handleAdd() {
                 const meal = els.mealInput.value.trim();
+                const notes = els.notesInput ? els.notesInput.value.trim() : ''; // NEW: Get Notes
+
                 if (!isAuthenticated) return toast('App not connected.', 'error');
                 if (!meal) return toast('Please enter a meal.', 'error');
                 
@@ -976,7 +1022,8 @@
                 const dateObj = dStr ? new Date(`${dStr}T00:00:00Z`) : new Date();
                 dateObj.setUTCHours(0,0,0,0);
                 
-                const entry = { meal, date: dateObj.toISOString(), tags: selectedTags, imageUrl: img, authorId: userId };
+                // NEW: Save Notes
+                const entry = { meal, notes, date: dateObj.toISOString(), tags: selectedTags, imageUrl: img, authorId: userId };
                 
                 try {
                     if(editingDocId) await setDoc(doc(db, dbCollectionPath, editingDocId), entry);
@@ -994,6 +1041,7 @@
                 if(!entry) return;
                 resetForm();
                 if(els.mealInput) els.mealInput.value = entry.meal;
+                if(els.notesInput) els.notesInput.value = entry.notes || ''; // NEW: Load Notes
                 
                 const d = new Date(entry.date);
                 const year = d.getUTCFullYear();
@@ -1053,6 +1101,17 @@
                         els.modalImage.src = ent.imageUrl || '';
                         els.modalImage.style.display = ent.imageUrl ? 'block' : 'none';
                     }
+                    
+                    // NEW: Show Notes in Modal
+                    if(els.modalNotes) {
+                        if(ent.notes) {
+                            els.modalNotes.textContent = `📝 ${ent.notes}`;
+                            els.modalNotes.classList.remove('hidden');
+                        } else {
+                            els.modalNotes.classList.add('hidden');
+                        }
+                    }
+                    
                     if(els.dinnerModal) els.dinnerModal.style.display = 'flex';
                 }
             });
