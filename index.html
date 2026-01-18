@@ -54,7 +54,6 @@
         </div>
     </div>
 
-    <!-- MAIN CONTAINER -->
     <div class="max-w-2xl mx-auto p-4 md:p-6">
         <!-- Header -->
         <div class="text-center mb-6">
@@ -73,7 +72,10 @@
             <!-- Step 2: Meal -->
             <div class="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
                 <label class="block text-md font-semibold mb-3 text-center text-slate-600 dark:text-slate-300">Step 2: What?</label>
-                <input id="mealInput" type="text" placeholder="e.g., Spaghetti and Meatballs" class="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-blue-500 transition duration-200">
+                <input id="mealInput" type="text" placeholder="e.g., Spaghetti and Meatballs" class="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-blue-500 transition duration-200 mb-3">
+                
+                <!-- NEW: Notes Field -->
+                <textarea id="notesInput" rows="2" placeholder="Notes (Optional)... e.g. 'At Grandma's' or 'New Recipe'" class="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-blue-500 transition duration-200 resize-none"></textarea>
             </div>
 
             <!-- Step 3: Who Ate -->
@@ -118,8 +120,8 @@
         <!-- VIEW 3: FOODS -->
         <div id="cloudView" class="hidden space-y-4">
             <div class="p-6 text-center space-y-2">
-                <h2 class="text-2xl font-bold text-slate-800 dark:text-slate-100">☁️ The Food Cloud</h2>
-                <p class="text-slate-500 dark:text-slate-400 text-sm">Tap a bubble to see when you ate it.</p>
+                <h2 class="text-2xl font-bold text-slate-800 dark:text-slate-100">🍽️ Your Foods</h2>
+                <p class="text-slate-500 dark:text-slate-400 text-sm">Meals you eat often appear larger.</p>
             </div>
             <div id="statWordCloud" class="p-4 flex flex-wrap gap-2 justify-center content-start">
                 <!-- Bubbles inserted here -->
@@ -129,30 +131,17 @@
         <!-- VIEW 4: STATS -->
         <div id="statsView" class="hidden space-y-5">
             
-            <!-- NEW: AI CONTROL CENTER -->
-            <div class="bg-gradient-to-br from-indigo-600 to-purple-600 rounded-3xl shadow-lg p-5 text-white">
-                <div class="flex justify-between items-start mb-4">
-                    <div>
-                        <h3 class="font-bold text-lg">✨ AI Deep Dive</h3>
-                        <p class="text-indigo-100 text-xs mt-1">Smarter analysis with Gemini</p>
-                    </div>
-                    <div class="bg-black/20 px-3 py-1 rounded-full text-xs font-mono" id="aiUsageBadge">Uses: 0/20</div>
-                </div>
-                
-                <button id="runAiBtn" class="w-full bg-white text-indigo-600 font-bold py-3 rounded-xl shadow-sm hover:bg-indigo-50 active:scale-95 transition-all flex items-center justify-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" /></svg>
-                    Analyze with AI
+            <!-- The Meal Picker -->
+            <div class="p-6 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl shadow-lg text-center text-white mb-6">
+                <h3 class="text-xl font-bold mb-2">Can't Decide?</h3>
+                <p class="text-blue-100 text-sm mb-4">Pick a random meal we haven't had in 30+ days.</p>
+                <button id="pickMealBtn" class="bg-white text-blue-600 font-bold py-3 px-8 rounded-full shadow-md hover:bg-blue-50 transition transform hover:scale-105 active:scale-95">
+                    🎲 Spin the Wheel
                 </button>
-                <p id="aiStatus" class="text-xs text-center mt-3 text-indigo-100 opacity-0 transition-opacity">Connecting to Gemini...</p>
-            </div>
-
-            <!-- AI Insight Card (Hidden until generated) -->
-            <div id="aiInsightCard" class="hidden bg-indigo-50 dark:bg-indigo-900/30 p-5 rounded-2xl border border-indigo-200 dark:border-indigo-700 shadow-sm relative overflow-hidden">
-                <div class="absolute -right-6 -top-6 text-indigo-100 dark:text-indigo-800 opacity-20">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-32 w-32" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                <div id="pickerResult" class="mt-4 hidden p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                    <p class="text-xs uppercase font-bold opacity-75">You should eat:</p>
+                    <p id="pickerMealName" class="text-xl font-bold mt-1"></p>
                 </div>
-                <h3 class="font-bold text-indigo-800 dark:text-indigo-200 mb-2 relative z-10">👨‍🍳 Chef's Insight</h3>
-                <p id="aiInsightText" class="text-sm text-slate-700 dark:text-slate-300 relative z-10 italic">Analysis goes here...</p>
             </div>
 
             <!-- Stats Grid -->
@@ -211,19 +200,34 @@
                     </div>
                     <span class="text-2xl font-bold text-slate-700 dark:text-slate-200" id="statChaos">0</span>
                 </div>
-                
-                <!-- The Meal Picker -->
-                <div class="p-6 bg-gradient-to-r from-blue-500 to-blue-700 rounded-3xl shadow-lg text-center text-white">
-                    <h3 class="text-xl font-bold mb-2">Can't Decide?</h3>
-                    <button id="pickMealBtn" class="bg-white text-blue-600 font-bold py-3 px-8 rounded-full shadow-md hover:bg-blue-50 transition transform hover:scale-105 active:scale-95">
-                        🎲 Spin the Wheel
-                    </button>
-                    <div id="pickerResult" class="mt-4 hidden p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                        <p class="text-xs uppercase font-bold opacity-75">You should eat:</p>
-                        <p id="pickerMealName" class="text-xl font-bold mt-1"></p>
-                    </div>
-                </div>
             </div>
+
+            <!-- NEW: AI CONTROL CENTER (Moved to Bottom) -->
+            <div class="bg-gradient-to-br from-indigo-600 to-purple-600 rounded-3xl shadow-lg p-5 text-white">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h3 class="font-bold text-lg">✨ AI Deep Dive</h3>
+                        <p class="text-indigo-100 text-xs mt-1">Smarter analysis with Gemini</p>
+                    </div>
+                    <div class="bg-black/20 px-3 py-1 rounded-full text-xs font-mono" id="aiUsageBadge">Uses: 0/20</div>
+                </div>
+                
+                <button id="runAiBtn" class="w-full bg-white text-indigo-600 font-bold py-3 rounded-xl shadow-sm hover:bg-indigo-50 active:scale-95 transition-all flex items-center justify-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" /></svg>
+                    Analyze with AI
+                </button>
+                <p id="aiStatus" class="text-xs text-center mt-3 text-indigo-100 opacity-0 transition-opacity">Connecting to Gemini...</p>
+            </div>
+            
+             <!-- AI Insight Card (Hidden until generated) -->
+            <div id="aiInsightCard" class="hidden bg-indigo-50 dark:bg-indigo-900/30 p-5 rounded-2xl border border-indigo-200 dark:border-indigo-700 shadow-sm relative overflow-hidden mt-4">
+                <div class="absolute -right-6 -top-6 text-indigo-100 dark:text-indigo-800 opacity-20">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-32 w-32" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                </div>
+                <h3 class="font-bold text-indigo-800 dark:text-indigo-200 mb-2 relative z-10">👨‍🍳 Chef's Insight</h3>
+                <p id="aiInsightText" class="text-sm text-slate-700 dark:text-slate-300 relative z-10 italic">Analysis goes here...</p>
+            </div>
+            
             <!-- END STATS VIEW -->
         </div> 
     </div> 
@@ -263,6 +267,8 @@
                     <p id="modalMeal" class="text-3xl font-bold text-slate-800 dark:text-slate-100"></p>
                     <p id="modalDate" class="text-sm text-slate-500 dark:text-slate-400"></p>
                     <div id="modalTags" class="flex flex-wrap gap-2 justify-center"></div>
+                    <!-- NEW: Notes Display in Modal -->
+                    <div id="modalNotes" class="hidden mt-4 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg text-sm text-slate-600 dark:text-slate-300 text-left border border-slate-200 dark:border-slate-700"></div>
                 </div>
             </div>
         </div>
@@ -343,6 +349,7 @@
             const auth = getAuth(app);
             const dbCollectionPath = `dinners/all/entries`;
 
+            // Helper to safe-select elements (fixes "Config Error" on missing DOM)
             const safeGet = (id) => {
                 const el = document.getElementById(id);
                 if (!el) console.warn(`Element #${id} not found in DOM`);
@@ -362,6 +369,7 @@
                 navStatsBtn: safeGet('navStatsBtn'),
                 
                 mealInput: safeGet('mealInput'),
+                notesInput: safeGet('notesInput'), // NEW
                 dateInput: safeGet('dateInput'),
                 addButton: safeGet('addButton'),
                 searchInput: safeGet('searchInput'),
@@ -375,6 +383,7 @@
                 modalMeal: safeGet('modalMeal'),
                 modalDate: safeGet('modalDate'),
                 modalTags: safeGet('modalTags'),
+                modalNotes: safeGet('modalNotes'), // NEW
                 
                 deleteModal: safeGet('deleteConfirmModal'),
                 cancelDelete: safeGet('cancelDeleteBtn'),
@@ -426,6 +435,7 @@
             let fileToUpload = null;
             let docIdToDelete = null;
 
+            // --- AI LOGIC ---
             function updateDailyUsage(increment = false) {
                 const today = new Date().toISOString().split('T')[0];
                 let usage = JSON.parse(localStorage.getItem('aiUsage') || '{}');
@@ -478,13 +488,16 @@
                     }
                     `;
 
-                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+                    // UPDATED: Using gemini-2.5-flash
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
                     });
 
                     const data = await response.json();
+                    if(data.error) throw new Error(data.error.message);
+
                     const aiText = data.candidates[0].content.parts[0].text.replace(/```json|```/g, '').trim();
                     const stats = JSON.parse(aiText);
 
@@ -514,7 +527,7 @@
 
                 } catch (error) {
                     console.error(error);
-                    alert("AI Error. Check your API key or try again.");
+                    alert("AI Error: " + error.message);
                     if(confirm("Do you want to reset your API Key?")) localStorage.removeItem('geminiApiKey');
                 } finally {
                     if(els.runAiBtn) {
@@ -592,30 +605,23 @@
                     const chaosCount = Object.values(dateCounts).filter(c => c > 1).length;
                     if(els.statChaos) els.statChaos.textContent = chaosCount;
 
-                    // --- NEW INTELLIGENT PHRASE ENGINE ---
-                    const stopWords = ['and', 'with', 'the', 'a', 'an', '&', 'of', 'in', 'on', 'w/', 'sauce', 'meal', 'dinner', 'lunch', 'for', 'from', 'we', 'got', 'here', 'watch', 'texas', 'made', 'ate', 'mom', 'dad', 'chad', 'zeus', 'takeout', 'restaurant', 'place', 'eat', 'eating'];
+                    // --- INTELLIGENT PHRASE ENGINE WITH PARENTHESIS REMOVAL ---
+                    const stopWords = ['and', 'with', 'the', 'a', 'an', '&', 'of', 'in', 'on', 'w/', 'sauce', 'meal', 'dinner', 'lunch', 'for', 'from', 'we', 'got', 'here', 'watch', 'texas', 'made', 'ate', 'mom', 'dad', 'chad', 'zeus', 'takeout', 'restaurant', 'place', 'eat', 'eating', 'were', 'was', 'had'];
                     const phraseCounts = {};
+                    const splitRegex = /,| and | with | & | \+ | w\/ /i;
 
                     dinners.forEach(d => {
                         if(d.meal) {
-                            const raw = d.meal.toLowerCase().replace(/[^a-z0-9\s]/g, '');
-                            const tokens = raw.split(/\s+/).filter(t => t.length > 2); 
-
-                            tokens.forEach(t => {
-                                if(!stopWords.includes(t)) phraseCounts[t] = (phraseCounts[t] || 0) + 1;
-                            });
-
-                            for(let i=0; i < tokens.length - 1; i++) {
-                                const bigram = tokens[i] + ' ' + tokens[i+1];
-                                if(!stopWords.includes(tokens[i]) && !stopWords.includes(tokens[i+1])) {
-                                     phraseCounts[bigram] = (phraseCounts[bigram] || 0) + 1;
-                                }
-                            }
+                            // NEW: Remove content inside parentheses
+                            const raw = d.meal.replace(/\(.*\)/g, '').toLowerCase().replace(/[^a-z0-9\s]/g, '');
                             
-                            for(let i=0; i < tokens.length - 2; i++) {
-                                const trigram = tokens[i] + ' ' + tokens[i+1] + ' ' + tokens[i+2];
-                                phraseCounts[trigram] = (phraseCounts[trigram] || 0) + 1;
-                            }
+                            const parts = d.meal.replace(/\(.*\)/g, '').split(splitRegex);
+                            parts.forEach(part => {
+                                let clean = part.trim().toLowerCase().replace(/^[^a-z0-9]+|[^a-z0-9]+$/g, '');
+                                if(clean.length > 2 && !stopWords.includes(clean)) {
+                                    phraseCounts[clean] = (phraseCounts[clean] || 0) + 1;
+                                }
+                            });
                         }
                     });
 
@@ -681,14 +687,18 @@
                         els.statTrifectaBar.style.width = `${trifectaPct}%`;
                     }
 
-                    // Habit Hunter
+                    // --- UPDATED HABIT HUNTER (Percentage + Shuffle) ---
                     if(els.statDayTrend) {
                         const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
                         const dayHabits = [{}, {}, {}, {}, {}, {}, {}];
+                        const dayTotals = [0, 0, 0, 0, 0, 0, 0]; // Track total meals per day
 
+                        // 1. Count everything
                         dinners.forEach(d => {
                             const date = new Date(d.date);
                             const dayIndex = date.getUTCDay();
+                            dayTotals[dayIndex]++;
+                            
                             finalPhrases.forEach(([phrase, _]) => {
                                 if ((d.meal || "").toLowerCase().includes(phrase)) {
                                     dayHabits[dayIndex][phrase] = (dayHabits[dayIndex][phrase] || 0) + 1;
@@ -696,22 +706,35 @@
                             });
                         });
 
-                        let topHabit = { day: null, meal: null, count: 0 };
+                        // 2. Find Candidates (Dominance > 20%)
+                        let candidates = [];
+
                         days.forEach((dayName, index) => {
                             const habits = dayHabits[index];
-                            if(Object.keys(habits).length > 0) {
+                            const totalMealsOnThisDay = dayTotals[index];
+
+                            if(Object.keys(habits).length > 0 && totalMealsOnThisDay > 2) { // Need at least 3 dates to form a pattern
                                 const sorted = Object.entries(habits).sort((a,b) => b[1] - a[1]);
                                 const [meal, count] = sorted[0];
-                                if (count > topHabit.count) {
-                                    topHabit = { day: dayName, meal: meal, count: count };
+                                const dominance = count / totalMealsOnThisDay;
+
+                                if (dominance > 0.20) { // Threshold: 20%
+                                    candidates.push({ 
+                                        day: dayName, 
+                                        meal: meal, 
+                                        pct: Math.round(dominance * 100) 
+                                    });
                                 }
                             }
                         });
 
-                        if (topHabit.day && topHabit.count > 1) {
-                            els.statDayTrend.innerHTML = `On <strong class="text-indigo-600 dark:text-indigo-400">${topHabit.day}s</strong>, you usually eat <strong class="capitalize">${topHabit.meal}</strong>.`;
+                        // 3. Shuffle and Display
+                        if (candidates.length > 0) {
+                            // Pick random candidate
+                            const winner = candidates[Math.floor(Math.random() * candidates.length)];
+                            els.statDayTrend.innerHTML = `On <strong class="text-indigo-600 dark:text-indigo-400">${winner.day}s</strong>, you eat <strong class="capitalize">${winner.meal}</strong> about <strong>${winner.pct}%</strong> of the time.`;
                         } else {
-                            els.statDayTrend.textContent = "No strong weekly patterns found yet.";
+                            els.statDayTrend.textContent = "Your eating habits are too chaotic to predict!";
                         }
                     }
 
@@ -833,6 +856,9 @@
                              if(t==='Dad') c='bg-green-100 text-green-600 dark:bg-green-900/40 dark:text-green-300';
                              return `<span class="text-[10px] px-1.5 py-0.5 rounded font-bold ${c}">${t}</span>`;
                         }).join('');
+                        
+                        // NEW: Add Note Indicator if Notes exist
+                        const noteIcon = m.notes ? `<span class="text-slate-400 ml-1" title="Has notes">📝</span>` : '';
 
                         return `
                         <div class="border-b border-slate-100 dark:border-slate-700/50 py-2 last:border-0">
@@ -840,8 +866,9 @@
                                 <span class="text-xs text-slate-400 mt-0.5 shrink-0 w-20">${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                                 <span class="text-sm text-slate-700 dark:text-slate-200 font-medium text-right flex-1 break-words ml-2">${m.meal}</span>
                             </div>
-                            <div class="flex justify-end gap-1 mt-1">
+                            <div class="flex justify-end gap-1 mt-1 items-center">
                                 ${tagsHtml}
+                                ${noteIcon}
                             </div>
                         </div>`
                     }).join('');
@@ -897,14 +924,21 @@
                             if(t==='Chad') c='bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300';
                             if(t==='Mom') c='bg-pink-100 text-pink-700 dark:bg-pink-900/40 dark:text-pink-300';
                             if(t==='Dad') c='bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300';
-                            return `<span class="text-xs ${c} px-2 py-1 rounded-full">${t}</span>`;
+                            return `<span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${c}">${t}</span>`;
                         }).join(' ');
+                        
+                        // NEW: Show Note Icon in History List
+                        const noteIcon = entry.notes ? `<span class="text-slate-400 ml-2" title="Has notes">📝</span>` : '';
+
                         item.innerHTML = `
                             <div class="flex items-center flex-grow min-w-0">
                                 ${thumb}
-                                <div class="entry-click cursor-pointer min-w-0" data-id="${entry.id}">
+                                <div class="entry-click cursor-pointer min-w-0 flex-1" data-id="${entry.id}">
                                     <p class="text-base font-semibold text-slate-800 dark:text-slate-100 whitespace-normal break-words">${entry.meal}</p>
-                                    <div class="flex gap-1 mt-0.5">${tags}</div>
+                                    <div class="flex items-center mt-0.5">
+                                        <div class="flex gap-1">${tags}</div>
+                                        ${noteIcon}
+                                    </div>
                                 </div>
                             </div>
                             <div class="flex items-center pl-2">
@@ -935,6 +969,7 @@
 
             function resetForm() {
                 if(els.mealInput) els.mealInput.value = '';
+                if(els.notesInput) els.notesInput.value = ''; // NEW
                 setDefaultDate(); 
                 selectedTags = [];
                 editingDocId = null;
@@ -963,6 +998,8 @@
 
             async function handleAdd() {
                 const meal = els.mealInput.value.trim();
+                const notes = els.notesInput ? els.notesInput.value.trim() : ''; // NEW
+
                 if (!isAuthenticated) return toast('App not connected.', 'error');
                 if (!meal) return toast('Please enter a meal.', 'error');
                 
@@ -987,7 +1024,8 @@
                 const dateObj = dStr ? new Date(`${dStr}T00:00:00Z`) : new Date();
                 dateObj.setUTCHours(0,0,0,0);
                 
-                const entry = { meal, date: dateObj.toISOString(), tags: selectedTags, imageUrl: img, authorId: userId };
+                // NEW: Added notes field to entry object
+                const entry = { meal, notes, date: dateObj.toISOString(), tags: selectedTags, imageUrl: img, authorId: userId };
                 
                 try {
                     if(editingDocId) await setDoc(doc(db, dbCollectionPath, editingDocId), entry);
@@ -1005,7 +1043,8 @@
                 if(!entry) return;
                 resetForm();
                 if(els.mealInput) els.mealInput.value = entry.meal;
-                
+                if(els.notesInput) els.notesInput.value = entry.notes || ''; // NEW
+
                 const d = new Date(entry.date);
                 const year = d.getUTCFullYear();
                 const month = String(d.getUTCMonth() + 1).padStart(2, '0');
@@ -1060,6 +1099,17 @@
                         if(t==='Dad') c='bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300';
                         return `<span class="text-xs ${c} px-2 py-1 rounded-full">${t}</span>`;
                     }).join('');
+                    
+                    // NEW: Show Notes in Modal
+                    if(els.modalNotes) {
+                        if (ent.notes) {
+                            els.modalNotes.textContent = ent.notes;
+                            els.modalNotes.classList.remove('hidden');
+                        } else {
+                            els.modalNotes.classList.add('hidden');
+                        }
+                    }
+
                     if(els.modalImage) {
                         els.modalImage.src = ent.imageUrl || '';
                         els.modalImage.style.display = ent.imageUrl ? 'block' : 'none';
