@@ -73,8 +73,7 @@
             <div class="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm space-y-3">
                 <label class="block text-md font-semibold text-center text-slate-600 dark:text-slate-300">Step 2: What?</label>
                 <input id="mealInput" type="text" placeholder="e.g., Spaghetti and Meatballs" class="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-blue-500 transition duration-200">
-                <!-- NEW: NOTES INPUT -->
-                <input id="notesInput" type="text" placeholder="Notes (Optional) - e.g. 'Restaurant name' or 'Recipe info'" class="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-blue-500 transition duration-200 text-sm">
+                <input id="notesInput" type="text" placeholder="Notes (Optional) - e.g. 'Restaurant name'" class="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-blue-500 transition duration-200 text-sm">
             </div>
 
             <!-- Step 3: Who Ate -->
@@ -200,7 +199,7 @@
                 </div>
             </div>
 
-            <!-- NEW: AI CONTROL CENTER (Moved to Bottom) -->
+            <!-- AI CONTROL CENTER -->
             <div class="bg-gradient-to-br from-indigo-600 to-purple-600 rounded-3xl shadow-lg p-5 text-white mt-4">
                 <div class="flex justify-between items-start mb-4">
                     <div>
@@ -209,14 +208,13 @@
                     </div>
                     <div class="bg-black/20 px-3 py-1 rounded-full text-xs font-mono" id="aiUsageBadge">Uses: 0/20</div>
                 </div>
-                
                 <button id="runAiBtn" class="w-full bg-white text-indigo-600 font-bold py-3 rounded-xl shadow-sm hover:bg-indigo-50 active:scale-95 transition-all flex items-center justify-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" /></svg>
                     Analyze with AI
                 </button>
                 <p id="aiStatus" class="text-xs text-center mt-3 text-indigo-100 opacity-0 transition-opacity">Connecting to Gemini...</p>
             </div>
-            <!-- AI Insight Card (Hidden until generated) -->
+            <!-- AI Insight Card -->
             <div id="aiInsightCard" class="hidden bg-indigo-50 dark:bg-indigo-900/30 p-5 rounded-2xl border border-indigo-200 dark:border-indigo-700 shadow-sm relative overflow-hidden mt-4">
                 <div class="absolute -right-6 -top-6 text-indigo-100 dark:text-indigo-800 opacity-20">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-32 w-32" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
@@ -262,7 +260,6 @@
                 <div class="space-y-2 text-center">
                     <p id="modalMeal" class="text-3xl font-bold text-slate-800 dark:text-slate-100"></p>
                     <p id="modalDate" class="text-sm text-slate-500 dark:text-slate-400"></p>
-                    <!-- NEW: NOTES DISPLAY IN MODAL -->
                     <p id="modalNotes" class="text-sm text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-700/50 p-3 rounded-lg border border-slate-100 dark:border-slate-700 italic hidden"></p>
                     <div id="modalTags" class="flex flex-wrap gap-2 justify-center"></div>
                 </div>
@@ -345,7 +342,6 @@
             const auth = getAuth(app);
             const dbCollectionPath = `dinners/all/entries`;
 
-            // Helper to safe-select elements (fixes "Config Error" on missing DOM)
             const safeGet = (id) => {
                 const el = document.getElementById(id);
                 if (!el) console.warn(`Element #${id} not found in DOM`);
@@ -365,7 +361,7 @@
                 navStatsBtn: safeGet('navStatsBtn'),
                 
                 mealInput: safeGet('mealInput'),
-                notesInput: safeGet('notesInput'), // NEW
+                notesInput: safeGet('notesInput'),
                 dateInput: safeGet('dateInput'),
                 addButton: safeGet('addButton'),
                 searchInput: safeGet('searchInput'),
@@ -379,7 +375,7 @@
                 modalMeal: safeGet('modalMeal'),
                 modalDate: safeGet('modalDate'),
                 modalTags: safeGet('modalTags'),
-                modalNotes: safeGet('modalNotes'), // NEW
+                modalNotes: safeGet('modalNotes'),
                 
                 deleteModal: safeGet('deleteConfirmModal'),
                 cancelDelete: safeGet('cancelDeleteBtn'),
@@ -588,9 +584,9 @@
 
                     if(els.statTotalCount) els.statTotalCount.textContent = dinners.length;
 
-                    // UPDATED: Count leftovers (using parens logic)
+                    // UPDATED: Count leftovers (using parens logic and String check)
                     const leftoverCount = dinners.filter(d => {
-                        let cleanMeal = (d.meal || "").replace(/\s*\(.*?\)\s*/g, '');
+                        let cleanMeal = String(d.meal || "").replace(/\s*\(.*?\)\s*/g, '');
                         return cleanMeal.toLowerCase().includes('leftover');
                     }).length;
                     if(els.statLeftovers) els.statLeftovers.textContent = leftoverCount;
@@ -605,15 +601,15 @@
                     const chaosCount = Object.values(dateCounts).filter(c => c > 1).length;
                     if(els.statChaos) els.statChaos.textContent = chaosCount;
 
-                    // --- INTELLIGENT PHRASE ENGINE (UPDATED: Remove Parens) ---
+                    // --- INTELLIGENT PHRASE ENGINE ---
                     const stopWords = ['and', 'with', 'the', 'a', 'an', '&', 'of', 'in', 'on', 'w/', 'sauce', 'meal', 'dinner', 'lunch', 'for', 'from', 'we', 'got', 'here', 'watch', 'texas', 'made', 'ate', 'mom', 'dad', 'chad', 'zeus', 'takeout', 'restaurant', 'place', 'eat', 'eating', 'were', 'was', 'had', 'been', 'has'];
                     const phraseCounts = {};
                     const splitRegex = /,/i; 
 
                     dinners.forEach(d => {
                         if(d.meal) {
-                            // REMOVE PARENS FIRST
-                            let cleanMeal = d.meal.replace(/\s*\(.*?\)\s*/g, '');
+                            // REMOVE PARENS FIRST, Force String
+                            let cleanMeal = String(d.meal).replace(/\s*\(.*?\)\s*/g, '');
                             const parts = cleanMeal.split(splitRegex);
                             parts.forEach(part => {
                                 let clean = part.trim().toLowerCase().replace(/^[^a-z0-9]+|[^a-z0-9]+$/g, ''); 
@@ -633,7 +629,6 @@
                         return !isSubset;
                     });
                     
-                    // Filter low count items for Cloud
                     const cloudPhrases = finalPhrases.filter(([_, count]) => count >= 2).slice(0, 50);
 
                     if(els.statWordCloud) {
@@ -648,11 +643,11 @@
                         }).join('');
                     }
 
-                    // --- KEYWORD LOGIC FOR TOP 5 (UPDATED: Remove Parens) ---
+                    // --- KEYWORD LOGIC FOR TOP 5 (Restored) ---
                     const keywordCounts = {};
                     dinners.forEach(d => {
                         if(d.meal) {
-                            let cleanMeal = d.meal.replace(/\s*\(.*?\)\s*/g, '');
+                            let cleanMeal = String(d.meal).replace(/\s*\(.*?\)\s*/g, '');
                             const raw = cleanMeal.toLowerCase().replace(/[^a-z0-9\s]/g, '');
                             const tokens = raw.split(/\s+/).filter(t => t.length > 2);
                             tokens.forEach(t => {
@@ -696,102 +691,134 @@
                         els.statTrifectaBar.style.width = `${trifectaPct}%`;
                     }
 
-                    // Habit Hunter (Threshold 30%, Shuffle)
+                    // --- UPDATED HABIT HUNTER (Percentage + Shuffle + Fallback) ---
                     if(els.statDayTrend) {
                         const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
                         const dayHabits = [{}, {}, {}, {}, {}, {}, {}];
                         const dayTotals = [0, 0, 0, 0, 0, 0, 0];
 
+                        // 1. Count everything
                         dinners.forEach(d => {
                             const date = new Date(d.date);
                             const dayIndex = date.getUTCDay();
                             dayTotals[dayIndex]++;
                             
-                            // Use Phrases for Habits (e.g. "Mac and Cheese")
-                            // UPDATED: Remove parens
-                            let cleanMeal = (d.meal || "").replace(/\s*\(.*?\)\s*/g, '');
-                            const parts = cleanMeal.split(/,/i);
-                            parts.forEach(part => {
-                                let phrase = part.trim().toLowerCase().replace(/^[^a-z0-9]+|[^a-z0-9]+$/g, '');
-                                if(phrase.length > 2 && !stopWords.includes(phrase)) {
-                                    dayHabits[dayIndex][phrase] = (dayHabits[dayIndex][phrase] || 0) + 1;
+                            // Use Keywords (Ingredients) for Habits (e.g. Chicken instead of Chicken Parm)
+                            let cleanMeal = String(d.meal || "").replace(/\s*\(.*?\)\s*/g, '');
+                            const raw = cleanMeal.toLowerCase().replace(/[^a-z0-9\s]/g, '');
+                            const tokens = raw.split(/\s+/).filter(t => t.length > 2);
+                            
+                            tokens.forEach(t => {
+                                if(!stopWords.includes(t)) {
+                                    dayHabits[dayIndex][t] = (dayHabits[dayIndex][t] || 0) + 1;
                                 }
                             });
                         });
 
+                        // 2. Find Candidates (Dominance > 20%)
                         let candidates = [];
+                        let globalFallback = { day: null, meal: null, count: 0, pct: 0 };
+
                         days.forEach((dayName, index) => {
                             const habits = dayHabits[index];
-                            const total = dayTotals[index];
-                            if(Object.keys(habits).length > 0 && total > 2) {
+                            const totalMealsOnThisDay = dayTotals[index];
+
+                            if(Object.keys(habits).length > 0 && totalMealsOnThisDay > 0) {
                                 const sorted = Object.entries(habits).sort((a,b) => b[1] - a[1]);
                                 const [meal, count] = sorted[0];
-                                const dominance = count / total;
-                                if (dominance >= 0.30) { // 30% Threshold
-                                    candidates.push({ day: dayName, meal: meal, pct: Math.round(dominance * 100) });
+                                const dominance = count / totalMealsOnThisDay;
+
+                                // Update global fallback just in case
+                                if (count > globalFallback.count) {
+                                    globalFallback = { day: dayName, meal: meal, count: count, pct: Math.round(dominance * 100) };
+                                }
+
+                                if (dominance > 0.20 && totalMealsOnThisDay > 2) { 
+                                    candidates.push({ 
+                                        day: dayName, 
+                                        meal: meal, 
+                                        pct: Math.round(dominance * 100) 
+                                    });
                                 }
                             }
                         });
 
+                        // 3. Shuffle and Display (with Fallback)
+                        let winner = null;
                         if (candidates.length > 0) {
-                            const winner = candidates[Math.floor(Math.random() * candidates.length)];
-                            els.statDayTrend.innerHTML = `On <strong class="text-indigo-600 dark:text-indigo-400">${winner.day}s</strong>, you usually eat <strong class="capitalize">${winner.meal}</strong> about <strong>${winner.pct}%</strong> of the time.`;
+                            winner = candidates[Math.floor(Math.random() * candidates.length)];
+                        } else if (globalFallback.count > 1) {
+                            winner = globalFallback; // Use the best single result we found
+                        }
+
+                        if (winner) {
+                            els.statDayTrend.innerHTML = `On <strong class="text-indigo-600 dark:text-indigo-400">${winner.day}s</strong>, you usually eat something with <strong class="capitalize">${winner.meal}</strong> about <strong>${winner.pct}%</strong> of the time.`;
                         } else {
-                            els.statDayTrend.textContent = "Your eating habits are too chaotic to predict!";
+                            els.statDayTrend.textContent = "Keep logging meals to unlock habit tracking!";
                         }
                     }
 
-                    // Overdue Favorite (Dynamic, remove parens)
+                    // Overdue Favorite (Dynamic)
                     if(els.statOverdue) {
-                        const popularPhrases = sortedPhrases.filter(x => x[1] >= 2).map(x => x[0]);
-                        let overdueCandidates = [];
-                        popularPhrases.forEach(word => {
-                            const entries = dinners.filter(d => {
-                                let clean = (d.meal || "").replace(/\s*\(.*?\)\s*/g, '');
-                                return clean.toLowerCase().includes(word)
+                        try {
+                            const popularPhrases = sortedPhrases.filter(x => x[1] >= 2).map(x => x[0]);
+                            let overdueCandidates = [];
+                            popularPhrases.forEach(word => {
+                                const entries = dinners.filter(d => {
+                                    let clean = String(d.meal || "").replace(/\s*\(.*?\)\s*/g, '');
+                                    return clean.toLowerCase().includes(word)
+                                });
+                                entries.sort((a, b) => new Date(b.date) - new Date(a.date));
+                                if(entries.length > 0 && entries[0].date) {
+                                    const lastEaten = new Date(entries[0].date);
+                                    const daysAgo = Math.floor((new Date() - lastEaten) / (1000 * 60 * 60 * 24));
+                                    if (daysAgo > 14) overdueCandidates.push({ word: word, daysAgo: daysAgo });
+                                }
                             });
-                            entries.sort((a, b) => new Date(b.date) - new Date(a.date));
-                            if(entries.length > 0 && entries[0].date) {
-                                const lastEaten = new Date(entries[0].date);
-                                const daysAgo = Math.floor((new Date() - lastEaten) / (1000 * 60 * 60 * 24));
-                                if (daysAgo > 14) overdueCandidates.push({ word: word, daysAgo: daysAgo });
+                            overdueCandidates.sort((a, b) => b.daysAgo - a.daysAgo);
+                            if (overdueCandidates.length > 0) {
+                                const topX = overdueCandidates.slice(0, 5); 
+                                const randomPick = topX[Math.floor(Math.random() * topX.length)];
+                                els.statOverdue.innerHTML = `<span class="capitalize text-lg font-bold">${randomPick.word}</span> <span class="text-sm opacity-75">(${randomPick.daysAgo} days ago)</span>`;
+                            } else {
+                                els.statOverdue.textContent = "Log more meals (nothing overdue yet!)";
                             }
-                        });
-                        overdueCandidates.sort((a, b) => b.daysAgo - a.daysAgo);
-                        if (overdueCandidates.length > 0) {
-                            const topX = overdueCandidates.slice(0, 5); 
-                            const randomPick = topX[Math.floor(Math.random() * topX.length)];
-                            els.statOverdue.innerHTML = `<span class="capitalize text-lg font-bold">${randomPick.word}</span> <span class="text-sm opacity-75">(${randomPick.daysAgo} days ago)</span>`;
-                        } else {
-                            els.statOverdue.textContent = "Log more meals (nothing overdue yet!)";
+                        } catch (e) {
+                            console.error("Overdue error", e);
+                            els.statOverdue.textContent = "Calculating...";
                         }
                     }
 
-                    // Fastest Repeat (Remove Parens)
+                    // Fastest Repeat
                     if(els.statFastestRepeat) {
-                        let minGap = Infinity;
-                        let fastMeal = null;
-                        const chronDinners = [...dinners].sort((a, b) => new Date(a.date) - new Date(b.date));
-                        for (let i = 0; i < chronDinners.length - 1; i++) {
-                            const d1 = chronDinners[i];
-                            let m1 = (d1.meal || "").replace(/\s*\(.*?\)\s*/g, '').toLowerCase().trim();
-                            for (let j = i + 1; j < chronDinners.length; j++) {
-                                const d2 = chronDinners[j];
-                                let m2 = (d2.meal || "").replace(/\s*\(.*?\)\s*/g, '').toLowerCase().trim();
-                                if (m1 && m2 && (m1 === m2 || (m1.length > 4 && m2.includes(m1))) && !m1.includes('leftover')) {
-                                    const diffTime = Math.abs(new Date(d2.date) - new Date(d1.date));
-                                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                                    if (diffDays > 0 && diffDays < minGap) {
-                                        minGap = diffDays;
-                                        fastMeal = d1.meal; // Keep original case for display if desired, or m1
+                        try {
+                            let minGap = Infinity;
+                            let fastMeal = null;
+                            const chronDinners = [...dinners].sort((a, b) => new Date(a.date) - new Date(b.date));
+                            for (let i = 0; i < chronDinners.length - 1; i++) {
+                                const d1 = chronDinners[i];
+                                let m1 = String(d1.meal || "").replace(/\s*\(.*?\)\s*/g, '').toLowerCase().trim();
+                                for (let j = i + 1; j < chronDinners.length; j++) {
+                                    const d2 = chronDinners[j];
+                                    let m2 = String(d2.meal || "").replace(/\s*\(.*?\)\s*/g, '').toLowerCase().trim();
+                                    if (m1 && m2 && (m1 === m2 || (m1.length > 4 && m2.includes(m1))) && !m1.includes('leftover')) {
+                                        const diffTime = Math.abs(new Date(d2.date) - new Date(d1.date));
+                                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                                        if (diffDays > 0 && diffDays < minGap) {
+                                            minGap = diffDays;
+                                            fastMeal = d1.meal; 
+                                        }
+                                        break; 
                                     }
-                                    break; 
+                                    if (j > i + 10) break; 
                                 }
-                                if (j > i + 10) break; 
                             }
+                            if (fastMeal) els.statFastestRepeat.innerHTML = `<span class="capitalize text-lg font-bold">${fastMeal}</span> <span class="text-sm opacity-75">(${minGap} days later)</span>`;
+                            else els.statFastestRepeat.textContent = "No repeats yet!";
+                        } catch (e) {
+                             console.error("Repeat error", e);
+                             els.statFastestRepeat.textContent = "Calculating...";
                         }
-                        if (fastMeal) els.statFastestRepeat.innerHTML = `<span class="capitalize text-lg font-bold">${fastMeal}</span> <span class="text-sm opacity-75">(${minGap} days later)</span>`;
-                        else els.statFastestRepeat.textContent = "No repeats yet!";
                     }
                 } catch(err) {
                     console.error("Stats calculation error:", err);
@@ -804,8 +831,8 @@
                 els.pickMealBtn.addEventListener('click', () => {
                     const thirtyDaysAgo = new Date();
                     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-                    const recentMeals = new Set(dinners.filter(d => new Date(d.date) > thirtyDaysAgo).map(d => (d.meal || "").replace(/\s*\(.*?\)\s*/g, '').trim().toLowerCase()));
-                    const eligibleMeals = dinners.map(d => (d.meal || "").replace(/\s*\(.*?\)\s*/g, '').trim()).filter(name => {
+                    const recentMeals = new Set(dinners.filter(d => new Date(d.date) > thirtyDaysAgo).map(d => String(d.meal || "").replace(/\s*\(.*?\)\s*/g, '').trim().toLowerCase()));
+                    const eligibleMeals = dinners.map(d => String(d.meal || "").replace(/\s*\(.*?\)\s*/g, '').trim()).filter(name => {
                         const lower = name.toLowerCase();
                         return !recentMeals.has(lower) && !lower.includes('leftover') && name.length > 2;
                     });
@@ -823,7 +850,7 @@
             }
 
             window.openWordStats = function(word) {
-                const matches = dinners.filter(d => (d.meal || "").toLowerCase().includes(word.toLowerCase()));
+                const matches = dinners.filter(d => String(d.meal || "").toLowerCase().includes(word.toLowerCase()));
                 if (matches.length === 0) return;
                 matches.sort((a, b) => new Date(b.date) - new Date(a.date));
 
