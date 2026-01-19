@@ -590,9 +590,8 @@
 
                     // UPDATED: Count leftovers (using parens logic and String check)
                     const leftoverCount = dinners.filter(d => {
-                        // Check raw meal string AND notes for the word "leftover"
-                        const rawText = (String(d.meal || "") + " " + String(d.notes || "")).toLowerCase();
-                        return rawText.includes('leftover');
+                        let cleanMeal = String(d.meal || "").replace(/\s*\(.*?\)\s*/g, '');
+                        return cleanMeal.toLowerCase().includes('leftover');
                     }).length;
                     if(els.statLeftovers) els.statLeftovers.textContent = leftoverCount;
 
