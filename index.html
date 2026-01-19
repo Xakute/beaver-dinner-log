@@ -201,7 +201,7 @@
                 </div>
             </div>
 
-            <!-- AI CONTROL CENTER (Moved to Bottom) -->
+            <!-- NEW: AI CONTROL CENTER (Moved to Bottom) -->
             <div class="bg-gradient-to-br from-indigo-600 to-purple-600 rounded-3xl shadow-lg p-5 text-white mt-4">
                 <div class="flex justify-between items-start mb-4">
                     <div>
@@ -217,7 +217,7 @@
                 </button>
                 <p id="aiStatus" class="text-xs text-center mt-3 text-indigo-100 opacity-0 transition-opacity">Connecting to Gemini...</p>
             </div>
-            <!-- AI Insight Card -->
+            <!-- AI Insight Card (Hidden until generated) -->
             <div id="aiInsightCard" class="hidden bg-indigo-50 dark:bg-indigo-900/30 p-5 rounded-2xl border border-indigo-200 dark:border-indigo-700 shadow-sm relative overflow-hidden mt-4">
                 <div class="absolute -right-6 -top-6 text-indigo-100 dark:text-indigo-800 opacity-20">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-32 w-32" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
@@ -588,10 +588,11 @@
 
                     if(els.statTotalCount) els.statTotalCount.textContent = dinners.length;
 
-                    // Count leftovers
+                    // UPDATED: Count leftovers (using parens logic and String check)
                     const leftoverCount = dinners.filter(d => {
-                        let cleanMeal = String(d.meal || "").replace(/\s*\(.*?\)\s*/g, '');
-                        return cleanMeal.toLowerCase().includes('leftover');
+                        // Check raw meal string AND notes for the word "leftover"
+                        const rawText = (String(d.meal || "") + " " + String(d.notes || "")).toLowerCase();
+                        return rawText.includes('leftover');
                     }).length;
                     if(els.statLeftovers) els.statLeftovers.textContent = leftoverCount;
 
@@ -608,7 +609,6 @@
                     // --- INTELLIGENT PHRASE ENGINE ---
                     const stopWords = ['and', 'with', 'the', 'a', 'an', '&', 'of', 'in', 'on', 'w/', 'sauce', 'meal', 'dinner', 'lunch', 'for', 'from', 'we', 'got', 'here', 'watch', 'texas', 'made', 'ate', 'mom', 'dad', 'chad', 'zeus', 'takeout', 'restaurant', 'place', 'eat', 'eating'];
                     const phraseCounts = {};
-                    // NEW: Added '-' to split regex
                     const splitRegex = /,| and | with | & | \+ | w\/ | - /i; 
 
                     dinners.forEach(d => {
@@ -696,7 +696,7 @@
                         els.statTrifectaBar.style.width = `${trifectaPct}%`;
                     }
 
-                    // Habit Hunter
+                    // --- UPDATED HABIT HUNTER (Percentage + Shuffle + Fallback) ---
                     if(els.statDayTrend) {
                         const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
                         const dayHabits = [{}, {}, {}, {}, {}, {}, {}];
@@ -750,19 +750,16 @@
                         let winner = null;
                         if (candidates.length > 0) {
                             winner = candidates[Math.floor(Math.random() * candidates.length)];
+                            els.statDayTrend.innerHTML = `On <strong class="text-indigo-600 dark:text-indigo-400">${winner.day}s</strong>, you usually eat <strong class="capitalize">${winner.meal}</strong>.`;
                         } else if (globalFallback.count > 0) {
                              winner = globalFallback;
                              els.statDayTrend.innerHTML = `You usually eat <strong class="capitalize">${winner.meal}</strong> the most!`;
                         } else {
                              els.statDayTrend.textContent = "Keep logging meals to unlock habit tracking!";
                         }
-
-                        if (candidates.length > 0 && winner) {
-                            els.statDayTrend.innerHTML = `On <strong class="text-indigo-600 dark:text-indigo-400">${winner.day}s</strong>, you usually eat <strong class="capitalize">${winner.meal}</strong>.`;
-                        }
                     }
 
-                    // Overdue Favorite (Fixed: Uses PHRASES now)
+                    // Overdue Favorite (Dynamic)
                     if(els.statOverdue) {
                         try {
                             const popularPhrases = finalPhrases.filter(x => x[1] >= 2).map(x => x[0]);
