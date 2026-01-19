@@ -606,7 +606,7 @@
                     if(els.statChaos) els.statChaos.textContent = chaosCount;
 
                     // --- INTELLIGENT PHRASE ENGINE ---
-                    const stopWords = ['and', 'with', 'the', 'a', 'an', '&', 'of', 'in', 'on', 'w/', 'sauce', 'meal', 'dinner', 'lunch', 'for', 'from', 'we', 'got', 'here', 'watch', 'texas', 'made', 'ate', 'mom', 'dad', 'chad', 'zeus', 'takeout', 'restaurant', 'place', 'eat', 'eating', 'were', 'was', 'had', 'been', 'has'];
+                    const stopWords = ['and', 'with', 'the', 'a', 'an', '&', 'of', 'in', 'on', 'w/', 'sauce', 'meal', 'dinner', 'lunch', 'for', 'from', 'we', 'got', 'here', 'watch', 'texas', 'made', 'ate', 'mom', 'dad', 'chad', 'zeus', 'takeout', 'restaurant', 'place', 'eat', 'eating'];
                     const phraseCounts = {};
                     const splitRegex = /,/i; 
 
@@ -633,7 +633,6 @@
                         return !isSubset;
                     });
                     
-                    // Filter low count items for Cloud
                     const cloudPhrases = finalPhrases.filter(([_, count]) => count >= 2).slice(0, 50);
 
                     if(els.statWordCloud) {
@@ -750,12 +749,15 @@
                         let winner = null;
                         if (candidates.length > 0) {
                             winner = candidates[Math.floor(Math.random() * candidates.length)];
-                            els.statDayTrend.innerHTML = `On <strong class="text-indigo-600 dark:text-indigo-400">${winner.day}s</strong>, you usually eat <strong class="capitalize">${winner.meal}</strong>.`;
                         } else if (globalFallback.count > 0) {
                              winner = globalFallback;
                              els.statDayTrend.innerHTML = `You usually eat <strong class="capitalize">${winner.meal}</strong> the most!`;
                         } else {
                              els.statDayTrend.textContent = "Keep logging meals to unlock habit tracking!";
+                        }
+
+                        if (candidates.length > 0 && winner) {
+                            els.statDayTrend.innerHTML = `On <strong class="text-indigo-600 dark:text-indigo-400">${winner.day}s</strong>, you usually eat <strong class="capitalize">${winner.meal}</strong>.`;
                         }
                     }
 
@@ -1121,8 +1123,8 @@
                     if(els.modalTags) els.modalTags.innerHTML = (ent.tags||[]).map(t => {
                         let c = 'bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-300';
                         if(t==='Chad') c='bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300';
-                        if(t==='Mom') c='bg-pink-100 text-pink-600 dark:bg-pink-900/40 dark:text-pink-300';
-                        if(t==='Dad') c='bg-green-100 text-green-600 dark:bg-green-900/40 dark:text-green-300';
+                        if(t==='Mom') c='bg-pink-100 text-pink-700 dark:bg-pink-900/40 dark:text-pink-300';
+                        if(t==='Dad') c='bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300';
                         return `<span class="text-xs ${c} px-2 py-1 rounded-full">${t}</span>`;
                     }).join('');
                     if(els.modalImage) {
