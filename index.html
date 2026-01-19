@@ -217,7 +217,7 @@
                 </button>
                 <p id="aiStatus" class="text-xs text-center mt-3 text-indigo-100 opacity-0 transition-opacity">Connecting to Gemini...</p>
             </div>
-            <!-- AI Insight Card -->
+            <!-- AI Insight Card (Hidden until generated) -->
             <div id="aiInsightCard" class="hidden bg-indigo-50 dark:bg-indigo-900/30 p-5 rounded-2xl border border-indigo-200 dark:border-indigo-700 shadow-sm relative overflow-hidden mt-4">
                 <div class="absolute -right-6 -top-6 text-indigo-100 dark:text-indigo-800 opacity-20">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-32 w-32" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
@@ -633,6 +633,7 @@
                         return !isSubset;
                     });
                     
+                    // Filter low count items for Cloud
                     const cloudPhrases = finalPhrases.filter(([_, count]) => count >= 2).slice(0, 50);
 
                     if(els.statWordCloud) {
@@ -749,21 +750,19 @@
                         let winner = null;
                         if (candidates.length > 0) {
                             winner = candidates[Math.floor(Math.random() * candidates.length)];
+                            els.statDayTrend.innerHTML = `On <strong class="text-indigo-600 dark:text-indigo-400">${winner.day}s</strong>, you usually eat <strong class="capitalize">${winner.meal}</strong>.`;
                         } else if (globalFallback.count > 0) {
                              winner = globalFallback;
-                        }
-
-                        if (winner) {
-                            els.statDayTrend.innerHTML = `On <strong class="text-indigo-600 dark:text-indigo-400">${winner.day}s</strong>, you usually eat <strong class="capitalize">${winner.meal}</strong>.`;
+                             els.statDayTrend.innerHTML = `You usually eat <strong class="capitalize">${winner.meal}</strong> the most!`;
                         } else {
-                            els.statDayTrend.textContent = "Keep logging meals to unlock habit tracking!";
+                             els.statDayTrend.textContent = "Keep logging meals to unlock habit tracking!";
                         }
                     }
 
                     // Overdue Favorite (Dynamic)
                     if(els.statOverdue) {
                         try {
-                            const popularPhrases = finalPhrases.filter(x => x[1] >= 2).map(x => x[0]);
+                            const popularPhrases = sortedKeywords.filter(x => x[1] >= 2).map(x => x[0]);
                             let overdueCandidates = [];
                             popularPhrases.forEach(word => {
                                 const entries = dinners.filter(d => {
@@ -954,7 +953,7 @@
                         // NEW: Show Notes Indicator
                         let notesIndicator = '';
                         if(entry.notes) {
-                             notesIndicator = `<span class="ml-2 text-[10px] text-slate-400 bg-slate-100 dark:bg-slate-700/50 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-600">📝</span>`;
+                             notesIndicator = `<svg class="ml-2 w-4 h-4 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>`;
                         }
 
                         item.innerHTML = `
@@ -1122,8 +1121,8 @@
                     if(els.modalTags) els.modalTags.innerHTML = (ent.tags||[]).map(t => {
                         let c = 'bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-300';
                         if(t==='Chad') c='bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300';
-                        if(t==='Mom') c='bg-pink-100 text-pink-700 dark:bg-pink-900/40 dark:text-pink-300';
-                        if(t==='Dad') c='bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300';
+                        if(t==='Mom') c='bg-pink-100 text-pink-600 dark:bg-pink-900/40 dark:text-pink-300';
+                        if(t==='Dad') c='bg-green-100 text-green-600 dark:bg-green-900/40 dark:text-green-300';
                         return `<span class="text-xs ${c} px-2 py-1 rounded-full">${t}</span>`;
                     }).join('');
                     if(els.modalImage) {
