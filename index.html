@@ -217,7 +217,7 @@
                 </button>
                 <p id="aiStatus" class="text-xs text-center mt-3 text-indigo-100 opacity-0 transition-opacity">Connecting to Gemini...</p>
             </div>
-            <!-- AI Insight Card (Hidden until generated) -->
+            <!-- AI Insight Card -->
             <div id="aiInsightCard" class="hidden bg-indigo-50 dark:bg-indigo-900/30 p-5 rounded-2xl border border-indigo-200 dark:border-indigo-700 shadow-sm relative overflow-hidden mt-4">
                 <div class="absolute -right-6 -top-6 text-indigo-100 dark:text-indigo-800 opacity-20">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-32 w-32" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
@@ -588,7 +588,7 @@
 
                     if(els.statTotalCount) els.statTotalCount.textContent = dinners.length;
 
-                    // UPDATED: Count leftovers (using parens logic and String check)
+                    // Count leftovers
                     const leftoverCount = dinners.filter(d => {
                         let cleanMeal = String(d.meal || "").replace(/\s*\(.*?\)\s*/g, '');
                         return cleanMeal.toLowerCase().includes('leftover');
@@ -608,7 +608,8 @@
                     // --- INTELLIGENT PHRASE ENGINE ---
                     const stopWords = ['and', 'with', 'the', 'a', 'an', '&', 'of', 'in', 'on', 'w/', 'sauce', 'meal', 'dinner', 'lunch', 'for', 'from', 'we', 'got', 'here', 'watch', 'texas', 'made', 'ate', 'mom', 'dad', 'chad', 'zeus', 'takeout', 'restaurant', 'place', 'eat', 'eating'];
                     const phraseCounts = {};
-                    const splitRegex = /,/i; 
+                    // NEW: Added '-' to split regex
+                    const splitRegex = /,| and | with | & | \+ | w\/ | - /i; 
 
                     dinners.forEach(d => {
                         if(d.meal) {
@@ -647,7 +648,7 @@
                         }).join('');
                     }
 
-                    // --- KEYWORD LOGIC FOR TOP 5 (Restored) ---
+                    // --- KEYWORD LOGIC FOR TOP 5 ---
                     const keywordCounts = {};
                     dinners.forEach(d => {
                         if(d.meal) {
@@ -695,7 +696,7 @@
                         els.statTrifectaBar.style.width = `${trifectaPct}%`;
                     }
 
-                    // --- UPDATED HABIT HUNTER (Percentage + Shuffle + Fallback) ---
+                    // Habit Hunter
                     if(els.statDayTrend) {
                         const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
                         const dayHabits = [{}, {}, {}, {}, {}, {}, {}];
@@ -761,10 +762,10 @@
                         }
                     }
 
-                    // Overdue Favorite (Dynamic)
+                    // Overdue Favorite (Fixed: Uses PHRASES now)
                     if(els.statOverdue) {
                         try {
-                            const popularPhrases = sortedKeywords.filter(x => x[1] >= 2).map(x => x[0]);
+                            const popularPhrases = finalPhrases.filter(x => x[1] >= 2).map(x => x[0]);
                             let overdueCandidates = [];
                             popularPhrases.forEach(word => {
                                 const entries = dinners.filter(d => {
