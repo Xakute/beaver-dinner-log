@@ -201,7 +201,7 @@
                 </div>
             </div>
 
-            <!-- NEW: AI CONTROL CENTER (Moved to Bottom) -->
+            <!-- AI CONTROL CENTER (Moved to Bottom) -->
             <div class="bg-gradient-to-br from-indigo-600 to-purple-600 rounded-3xl shadow-lg p-5 text-white mt-4">
                 <div class="flex justify-between items-start mb-4">
                     <div>
@@ -886,14 +886,23 @@
                              return `<span class="text-[10px] px-1.5 py-0.5 rounded font-bold ${c}">${t}</span>`;
                         }).join('');
 
+                        // NOTES ICON MOVED HERE
+                        let notesIcon = '';
+                        if(m.notes) {
+                             notesIcon = `<svg class="w-4 h-4 text-amber-500 dark:text-amber-400 shrink-0 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>`;
+                        }
+
                         return `
                         <div class="border-b border-slate-100 dark:border-slate-700/50 py-2 last:border-0">
                             <div class="flex justify-between items-start">
                                 <span class="text-xs text-slate-400 mt-0.5 shrink-0 w-20">${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                                 <span class="text-sm text-slate-700 dark:text-slate-200 font-medium text-right flex-1 break-words ml-2">${m.meal}</span>
                             </div>
-                            <div class="flex justify-end gap-1 mt-1">
-                                ${tagsHtml}
+                            <div class="flex justify-end items-center mt-1">
+                                <div class="flex gap-1">
+                                    ${tagsHtml}
+                                </div>
+                                ${notesIcon}
                             </div>
                         </div>`
                     }).join('');
@@ -955,7 +964,7 @@
                         // NEW: Show Notes Indicator
                         let notesIndicator = '';
                         if(entry.notes) {
-                             notesIndicator = `<svg class="ml-2 w-4 h-4 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>`;
+                             notesIndicator = `<svg class="w-4 h-4 text-amber-500 dark:text-amber-400 shrink-0 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>`;
                         }
 
                         item.innerHTML = `
@@ -964,9 +973,11 @@
                                 <div class="entry-click cursor-pointer min-w-0 flex-1" data-id="${entry.id}">
                                     <div class="flex items-center">
                                         <p class="text-base font-semibold text-slate-800 dark:text-slate-100 whitespace-normal break-words">${entry.meal}</p>
+                                    </div>
+                                    <div class="flex items-center mt-0.5">
+                                        <div class="flex gap-1">${tags}</div>
                                         ${notesIndicator}
                                     </div>
-                                    <div class="flex gap-1 mt-0.5">${tags}</div>
                                 </div>
                             </div>
                             <div class="flex items-center pl-2">
